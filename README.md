@@ -9,14 +9,14 @@ A secure, user-friendly digital wallet application built with NestJS and Postgre
 - Send and receive payments
 - Transaction history and tracking
 - Secure data encryption
-- RESTful API with comprehensive documentation (Swagger)
+- RESTful API with comprehensive documentation (Postman)
 - Admin dashboard (optional)
 
 ## Tech Stack
 
 - Backend: NestJS, TypeORM, PostgreSQL
 - Auth: JWT (JSON Web Token)
-- API Docs: Swagger (OpenAPI)
+- API Docs: Postman (OpenAPI)
 - Testing: Jest, Supertest
 
 ## Getting Started
@@ -52,8 +52,6 @@ Once running, visit: [http://localhost:3000/api](http://localhost:3000/api) for 
 ## Running Tests
 
 npm run test
-
-
 
 ## Deployment
 

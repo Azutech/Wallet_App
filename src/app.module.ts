@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { WalletsModule } from './apis/wallets/wallets.module';
+import { NotificationModule } from './apis/notification/notification.module';
 
 @Module({
   imports: [
@@ -45,6 +46,8 @@ import { WalletsModule } from './apis/wallets/wallets.module';
     }),
 
     WalletsModule,
+
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
