@@ -14,10 +14,10 @@ import { UserDto } from './dto/user.dto';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  // create(@Body() createUserDto: UserDto) {
-  //   return this.usersService.create(createUserDto);
-  // }
+  @Post('addUser')
+  create(@Body() createUserDto: UserDto) {
+    return this.usersService.createUser(createUserDto);
+  }
 
   @Get()
   findAll() {

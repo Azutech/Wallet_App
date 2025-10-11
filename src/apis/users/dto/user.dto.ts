@@ -6,5 +6,5 @@ export class UserDto {
   BVN: string;
   dateOfBirth: Date;
   userId?: string; // optional, for updates
-  balance?: string; // optional, for wallet creation
+  isActive?: boolean; // optional, for update
 }

@@ -12,14 +12,20 @@ export class UsersService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async createUser(dto: any) {
+  async createUser(dto: UserDto) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
+
+      const existingUser = await this.usersRepository.findByEmail(dto.email);
+      if (existingUser) {
+        throw new Error('User with this email already exists');
+      }
+
       const user = await this.usersRepository.createUser({ ...dto });
-      await this.walletsRepository.createWallet({ userId: user.id, currency: 'NGN' });
+      await this.walletsRepository.createWallet({ userId: user.id,  currency: 'NGN' });
       await queryRunner.commitTransaction();
       return user;
     } catch (error) {

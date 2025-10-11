@@ -28,7 +28,7 @@ export class Wallet {
 
   // store balance in smallest currency unit (e.g. kobo/ngn cents) as bigint
   @Column({ type: 'bigint', default: 0 })
-  balance: bigint; // keep as bigint in entity to avoid JS number issues
+  balance: number; // keep as bigint in entity to avoid JS number issues
 
   @CreateDateColumn()
   createdAt: Date;
