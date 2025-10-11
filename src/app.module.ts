@@ -4,6 +4,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { WalletsModule } from './apis/wallets/wallets.module';
+import { NotificationModule } from './apis/notification/notification.module';
+import { User } from './apis/users/entity/user.entity';
+import { UsersModule } from './apis/users/users.module';
 
 @Module({
   imports: [
@@ -26,22 +29,26 @@ import { WalletsModule } from './apis/wallets/wallets.module';
         database: configService.get('DB_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: configService.get('NODE_ENV') !== 'production',
-        
+
         // SSL Configuration
-        ssl: configService.get('DB_SSL') === 'true' ? {
-          rejectUnauthorized: false,
-        } : false,
-        
+        ssl:
+          configService.get('DB_SSL') === 'true'
+            ? {
+                rejectUnauthorized: false,
+              }
+            : false,
+
         // Connection pool settings (optional but recommended)
         extra: {
           max: 10, // Maximum connections
-          min: 2,  // Minimum connections
+          min: 2, // Minimum connections
           idleTimeoutMillis: 30000,
         },
       }),
     }),
-
+    UsersModule,
     WalletsModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
