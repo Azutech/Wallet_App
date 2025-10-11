@@ -15,7 +15,6 @@ export class NotificationService {
     return `This action returns a #${id} notification`;
   }
 
-
   remove(id: number) {
     return `This action removes a #${id} notification`;
   }
