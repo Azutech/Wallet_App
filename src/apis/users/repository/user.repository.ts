@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Repository, DataSource, EntityManager} from 'typeorm';
+import { Repository, DataSource, EntityManager } from 'typeorm';
 import { User } from '../entity/user.entity';
 
 @Injectable()
@@ -24,7 +24,10 @@ export class UsersRepository extends Repository<User> {
     return await this.save(newUser);
   }
 
-  async findByEmail(email: string): Promise<User | null> {
-    return await this.findOne({ where: { email } });
+  async findWithWallets(userId: string): Promise<User | null> {
+    return await this.findOne({
+      where: { id: userId },
+      relations: ['wallets'],
+    });
   }
 }

@@ -27,15 +27,13 @@ export class UsersService {
 
     try {
       let { password } = dto;
-      const usersRepo = queryRunner.manager.getRepository(
-        User,
-      );
-      const walletsRepo = queryRunner.manager.getRepository(
-        Wallet,
-      );
+      const usersRepo = queryRunner.manager.getRepository(User);
+      const walletsRepo = queryRunner.manager.getRepository(Wallet);
 
       // check for existing user
-      const existingUser = await usersRepo.findOne({where: { email: dto.email }});
+      const existingUser = await usersRepo.findOne({
+        where: { email: dto.email },
+      });
       if (existingUser) {
         AppResponse.error({
           message: 'User with that email already exists',
@@ -72,7 +70,6 @@ export class UsersService {
 
       await walletsRepo.save(wallet);
 
-
       // assign wallet reference before commit
       user.wallets = [wallet];
 
@@ -80,7 +77,7 @@ export class UsersService {
         userId: user?.id,
         // role: user?.role,
       };
-      const final =  {
+      const final = {
         auth: this.jwtService.createEncryptedToken(authTokenParam),
         message: 'sign up successful \u2705',
       };
@@ -98,10 +95,7 @@ export class UsersService {
 
   async dashboard(userId: string) {
     try {
-      const user = await this.usersRepository.findOne({
-        where: { id: userId },
-        relations: { wallets: true },
-      });
+      const user = await this.usersRepository.findWithWallets(userId);
 
       if (!user) {
         AppResponse.error({
@@ -110,8 +104,10 @@ export class UsersService {
         });
       }
 
+      const { password, ...safeUser } = user;
+
       return {
-        user,
+        user: safeUser,
       };
     } catch (err) {
       err.location = `UsersService.${this.dashboard.name} method`;

@@ -40,7 +40,9 @@ export class UsersController {
   async findOne(@Req() req: any, @Res() res: Response) {
     const userId = req.user.userId;
     const result = await this.usersService.dashboard(userId);
-    return res.status(HttpStatus.OK).json(success('User retrieved successfully', 200, result));
+    return res
+      .status(HttpStatus.OK)
+      .json(success('User retrieved successfully', 200, result));
   }
 
   @Delete(':id')
