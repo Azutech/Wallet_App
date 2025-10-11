@@ -22,10 +22,16 @@ export class User {
   lastName: string;
 
   @Column()
+  password: string;
+
+  @Column()
   phoneNumber: string;
 
   @Column()
   BVN: string;
+
+  @Column()
+  avatar: string;
 
   @Column()
   dateOfBirth: Date;

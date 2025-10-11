@@ -5,6 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { WalletsModule } from './apis/wallets/wallets.module';
 import { NotificationModule } from './apis/notification/notification.module';
+import { User } from './apis/users/entity/user.entity';
+import { UsersModule } from './apis/users/users.module';
 
 @Module({
   imports: [
@@ -44,9 +46,8 @@ import { NotificationModule } from './apis/notification/notification.module';
         },
       }),
     }),
-
+    UsersModule,
     WalletsModule,
-
     NotificationModule,
   ],
   controllers: [AppController],
