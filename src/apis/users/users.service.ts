@@ -96,6 +96,29 @@ export class UsersService {
     }
   }
 
+  async dashboard(userId: string) {
+    try {
+      const user = await this.usersRepository.findOne({
+        where: { id: userId },
+        relations: { wallets: true },
+      });
+
+      if (!user) {
+        AppResponse.error({
+          message: 'User not found',
+          status: HttpStatus.NOT_FOUND,
+        });
+      }
+
+      return {
+        user,
+      };
+    } catch (err) {
+      err.location = `UsersService.${this.dashboard.name} method`;
+      AppResponse.error(err);
+    }
+  }
+
   findAll() {
     return `This action returns all users`;
   }

@@ -8,11 +8,13 @@ import {
   Param,
   Delete,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { AppResponse } from 'src/common/app.response';
 import { UsersService } from './users.service';
 import { UserDto } from './dto/user.dto';
 import { Response } from 'express';
+import { JwtAuthGuard } from 'src/guards/jwt/jwt.guard';
 
 const { success } = AppResponse;
 
@@ -29,13 +31,16 @@ export class UsersController {
   }
 
   @Get()
-  findAll() {
+  asyfindAll() {
     return this.usersService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  async findOne(@Req() req: any, @Res() res: Response) {
+    const userId = req.user.userId;
+    const result = await this.usersService.dashboard(userId);
+    return res.status(HttpStatus.OK).json(success('User retrieved successfully', 200, result));
   }
 
   @Delete(':id')
