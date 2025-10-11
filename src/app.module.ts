@@ -6,22 +6,39 @@ import { AppService } from './app.service';
 
 @Module({
   imports: [
-     ConfigModule.forRoot({
+    ConfigModule.forRoot({
       envFilePath: ['.env'],
       isGlobal: true,
       expandVariables: true,
     }),
 
-    //    TypeOrmModule.forRoot({
-    //   type: 'postgres',
-    //   host: 'localhost',       // your postgres host
-    //   port: 5432,              // default postgres port
-    //   username: 'youruser',    // your postgres username
-    //   password: 'yourpassword',// your postgres password
-    //   database: 'yourdbname',  // your postgres database name
-    //   entities: [__dirname + '/**/*.entity{.ts,.js}'],
-    //   synchronize: true,       // use only in dev; auto create tables
-    // }),
+    // ✅ Use ConfigService for dynamic configuration
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('DB_HOST'),
+        port: configService.get('DB_PORT'),
+        username: configService.get('DB_USERNAME'),
+        password: configService.get('DB_PASSWORD'),
+        database: configService.get('DB_NAME'),
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: configService.get('NODE_ENV') !== 'production',
+        
+        // SSL Configuration
+        ssl: configService.get('DB_SSL') === 'true' ? {
+          rejectUnauthorized: false,
+        } : false,
+        
+        // Connection pool settings (optional but recommended)
+        extra: {
+          max: 10, // Maximum connections
+          min: 2,  // Minimum connections
+          idleTimeoutMillis: 30000,
+        },
+      }),
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
