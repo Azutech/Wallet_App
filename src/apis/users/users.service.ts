@@ -1,10 +1,33 @@
 import { Injectable } from '@nestjs/common';
 import { UserDto } from './dto/user.dto';
+import { UsersRepository } from './repository/user.repository';
+import { DataSource } from 'typeorm';
+import { WalletsRepository } from '../wallets/repository/wallet.repository';
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: UserDto) {
-    return 'This action adds a new user';
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly walletsRepository: WalletsRepository,
+    private readonly dataSource: DataSource,
+  ) {}
+
+  async createUser(dto: any) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const user = await this.usersRepository.createUser({ ...dto });
+      await this.walletsRepository.createWallet({ userId: user.id, currency: 'NGN' });
+      await queryRunner.commitTransaction();
+      return user;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   findAll() {

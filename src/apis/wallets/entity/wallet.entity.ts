@@ -6,6 +6,7 @@ import {
   ManyToOne,
   CreateDateColumn,
   Index,
+  JoinColumn,
 } from 'typeorm';
 import { User } from '../../users/entity/user.entity';
 
@@ -14,11 +15,11 @@ export class Wallet {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => User, (u) => u.wallets, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.wallets, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'userId' })
   user: User;
 
   @Column()
-  @Index()
   userId: string;
 
   // store currency code (USD, NGN...) if needed
@@ -27,7 +28,7 @@ export class Wallet {
 
   // store balance in smallest currency unit (e.g. kobo/ngn cents) as bigint
   @Column({ type: 'bigint', default: 0 })
-  balance: string; // keep as string in entity to avoid JS number issues
+  balance: bigint; // keep as bigint in entity to avoid JS number issues
 
   @CreateDateColumn()
   createdAt: Date;
