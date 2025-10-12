@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "typeorm": "typeorm-ts-node-commonjs",
-    "migration:generate": "npm run typeorm -- migration:generate src/migrations/users -d src/configs/typeorm.config.ts",
+    "migration:generate": "npm run typeorm -- migration:generate src/migrations/tokens -d src/configs/typeorm.config.ts",
     "migration:run": "npm run typeorm -- migration:run -d src/configs/typeorm.config.ts",
     "migration:revert": "npm run typeorm -- migration:revert -d src/configs/typeorm.config.ts",
     "migration:show": "npm run typeorm -- migration:show -d src/configs/typeorm.config.ts",
@@ -36,6 +36,7 @@
     "@sendgrid/mail": "^8.1.6",
     "@types/bcrypt": "^6.0.0",
     "bcrypt": "^6.0.0",
+    "moment": "^2.30.1",
     "passport-jwt": "^4.0.1",
     "pg": "^8.16.3",
     "reflect-metadata": "^0.1.13",

@@ -1,4 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
+import * as moment from 'moment';
 import { UserDto } from './dto/user.dto';
 import { UsersRepository } from './repository/user.repository';
 import { hashSync, genSaltSync, compareSync } from 'bcrypt';
@@ -9,12 +10,16 @@ import { AppResponse } from 'src/common/app.response';
 import { JwtService } from 'src/guards/jwt/jwt.service';
 import { User } from './entity/user.entity';
 import { Wallet } from '../wallets/entity/wallet.entity';
+import { TokenRepository } from './repository/token.repository';
+import { generateRandomNumbers } from './enums/random.enum';
+import { trimObjectStrings } from 'src/common/utils/trim-object.util';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly walletsRepository: WalletsRepository,
+    private readonly tokenRepository: TokenRepository,
     readonly jwtService: JwtService,
 
     private readonly dataSource: DataSource,
@@ -26,7 +31,10 @@ export class UsersService {
     await queryRunner.startTransaction();
 
     try {
-      let { password } = dto;
+
+            const sanitizedDto = trimObjectStrings(dto);
+
+      let { password } = sanitizedDto;
       const usersRepo = queryRunner.manager.getRepository(User);
       const walletsRepo = queryRunner.manager.getRepository(Wallet);
 
@@ -83,13 +91,17 @@ export class UsersService {
       };
 
       await queryRunner.commitTransaction();
+
+      await this.sendMailToken(user.email);
+
       return final;
     } catch (err) {
       await queryRunner.rollbackTransaction();
       err.location = `UsersService.${this.createUser.name} method`;
       AppResponse.error(err);
-    } finally {
-      await queryRunner.release();
+    } finally{
+            await queryRunner.release();
+
     }
   }
 
@@ -111,6 +123,42 @@ export class UsersService {
       };
     } catch (err) {
       err.location = `UsersService.${this.dashboard.name} method`;
+      AppResponse.error(err);
+    }
+  }
+
+  async sendMailToken(email: string) {
+    try {
+      // check if user exists
+      const user = await this.usersRepository.findOne({
+        where: { email },
+      });
+
+      if (!user) {
+        AppResponse.error({
+          message: 'User with that email does not exist',
+          status: HttpStatus.NOT_FOUND,
+        });
+      }
+
+      // generate token
+      const verCode = generateRandomNumbers();
+
+      // save token to db
+      const newToken = await this.tokenRepository.createToken({
+        email,
+        code: verCode,
+        expiresAt: moment().add(15, 'minutes').toDate(), // token expires in 15 minutes
+      });
+
+      // send token to user's email - TODO
+
+      return {
+        message: 'Token sent to email',
+        newToken,
+      };
+    } catch (err) {
+      err.location = `UsersService.${this.sendMailToken.name} method`;
       AppResponse.error(err);
     }
   }
