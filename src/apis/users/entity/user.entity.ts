@@ -42,6 +42,13 @@ export class User {
   @Column({ default: false })
   isActive: boolean;
 
+    @Column({
+    type: 'enum',
+    enum: ['pending', 'verified', 'suspended', 'deactivated'],
+    default: 'pending',
+  })
+  status: 'pending' | 'verified' | 'suspended' | 'deactivated';
+
   @OneToMany(() => Wallet, (w) => w.user)
   wallets: Wallet[];
 }
