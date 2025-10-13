@@ -31,8 +31,7 @@ export class UsersService {
     await queryRunner.startTransaction();
 
     try {
-
-            const sanitizedDto = trimObjectStrings(dto);
+      const sanitizedDto = trimObjectStrings(dto);
 
       let { password } = sanitizedDto;
       const usersRepo = queryRunner.manager.getRepository(User);
@@ -48,6 +47,15 @@ export class UsersService {
           status: HttpStatus.CONFLICT,
         });
       }
+      // const existingUser = await usersRepo.findOne({
+      //   where: { email: dto.email },
+      // });
+      // if (existingUser) {
+      //   AppResponse.error({
+      //     message: 'User with that email already exists',
+      //     status: HttpStatus.CONFLICT,
+      //   });
+      // }
 
       const checkPassword = validatePassword(password);
 
@@ -92,16 +100,29 @@ export class UsersService {
 
       await queryRunner.commitTransaction();
 
-      await this.sendMailToken(user.email);
+      try {
+        await this.sendMailToken(user.email);
+      } catch (emailError) {
+        // Log the error but don't throw it
+        console.error('Failed to send verification email:', emailError);
+        // Optionally: Queue the email for retry or log to monitoring service
+      }
 
       return final;
     } catch (err) {
-      await queryRunner.rollbackTransaction();
+      if (queryRunner.isTransactionActive) {
+        await queryRunner.rollbackTransaction();
+      }
       err.location = `UsersService.${this.createUser.name} method`;
       AppResponse.error(err);
-    } finally{
-            await queryRunner.release();
+    } finally {
+      await queryRunner.release();
+    }
 
+    try {
+      await this.sendMailToken(dto.email);
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
     }
   }
 
@@ -146,7 +167,8 @@ export class UsersService {
 
       // save token to db
       const newToken = await this.tokenRepository.createToken({
-        email,
+          userId: user.id,  // ← Use user.id (UUID) instead of email
+        email: user.email,
         code: verCode,
         expiresAt: moment().add(15, 'minutes').toDate(), // token expires in 15 minutes
       });
