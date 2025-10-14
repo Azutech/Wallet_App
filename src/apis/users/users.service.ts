@@ -47,15 +47,6 @@ export class UsersService {
           status: HttpStatus.CONFLICT,
         });
       }
-      // const existingUser = await usersRepo.findOne({
-      //   where: { email: dto.email },
-      // });
-      // if (existingUser) {
-      //   AppResponse.error({
-      //     message: 'User with that email already exists',
-      //     status: HttpStatus.CONFLICT,
-      //   });
-      // }
 
       const checkPassword = validatePassword(password);
 
