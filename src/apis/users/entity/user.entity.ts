@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { Wallet } from '../../wallets/entity/wallet.entity';
 import { Token } from './token.entity';
+import { Payment } from 'src/apis/payments/entity/payment.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -43,6 +44,9 @@ export class User {
   @Column({ default: false })
   isActive: boolean;
 
+    @Column({ nullable: true })
+  transactionPin?: string;
+
   @Column({
     type: 'enum',
     enum: ['pending', 'verified', 'suspended', 'deactivated'],
@@ -52,6 +56,9 @@ export class User {
 
   @OneToMany(() => Wallet, (w) => w.user)
   wallets: Wallet[];
+
+  @OneToMany(() => Payment, (p) => p.user)
+  payments: Payment[];
 
   @OneToMany(() => Token, (t) => t.user)
   tokens: Token[];
