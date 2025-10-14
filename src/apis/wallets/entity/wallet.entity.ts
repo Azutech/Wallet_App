@@ -1,4 +1,3 @@
-// FILE: src/entities/wallet.entity.ts
 import {
   Entity,
   PrimaryGeneratedColumn,
