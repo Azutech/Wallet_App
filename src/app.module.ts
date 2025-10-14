@@ -8,6 +8,7 @@ import { NotificationModule } from './apis/notification/notification.module';
 import { User } from './apis/users/entity/user.entity';
 import { UsersModule } from './apis/users/users.module';
 import { PaymentsModule } from './apis/payments/payments.module';
+import { TransactionModule } from './transactions/transaction.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { PaymentsModule } from './apis/payments/payments.module';
     WalletsModule,
     NotificationModule,
     PaymentsModule,
+    TransactionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

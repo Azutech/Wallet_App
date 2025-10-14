@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import { Wallet } from '../../wallets/entity/wallet.entity';
 import { Token } from './token.entity';
-import { Payment } from 'src/apis/payments/entity/payment.entity';
+import { Payment } from '../../payments/entity/payment.entity';
 
 @Entity({ name: 'users' })
 export class User {
