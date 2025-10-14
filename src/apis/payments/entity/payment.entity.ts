@@ -9,9 +9,6 @@ import {
 import { User } from '../../users/entity/user.entity'; // adjust path if different
 import { PaymentMethod, PaymentStatus } from '../enum/utils/enum.utils';
 
-
-
-
 @Entity()
 export class Payment {
   @PrimaryGeneratedColumn('uuid')

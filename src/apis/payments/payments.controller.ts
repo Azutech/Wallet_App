@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 
@@ -20,8 +28,6 @@ export class PaymentsController {
   findOne(@Param('id') id: string) {
     return this.paymentsService.findOne(+id);
   }
-
-
 
   @Delete(':id')
   remove(@Param('id') id: string) {

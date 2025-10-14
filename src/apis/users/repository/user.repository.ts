@@ -32,7 +32,7 @@ export class UsersRepository extends Repository<User> {
   }
   async findUser(userId: string): Promise<User | null> {
     return await this.findOne({
-      where: { id: userId }
+      where: { id: userId },
     });
   }
 }

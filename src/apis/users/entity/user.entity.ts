@@ -44,7 +44,7 @@ export class User {
   @Column({ default: false })
   isActive: boolean;
 
-    @Column({ nullable: true })
+  @Column({ nullable: true })
   transactionPin?: string;
 
   @Column({

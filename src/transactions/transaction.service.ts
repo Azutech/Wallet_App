@@ -11,40 +11,44 @@ export class TransactionService {
     private readonly usersRepository: UsersRepository,
   ) {}
 
-    async setTransactionPin(userId: string, newPin: string) {
-    if (!/^\d{4,6}$/.test(newPin)) {
-
+  async setTransactionPin(userId: string, newPin: string) {
+    try {
+      if (!/^\d{4,6}$/.test(newPin)) {
         return AppResponse.error({
           message: 'PIN must be 4–6 digits.',
           status: HttpStatus.BAD_REQUEST,
         });
       }
-    
 
-    const user = await this.usersRepository.findUser(userId);
-    if (!user) {
-            return AppResponse.error({
+      const user = await this.usersRepository.findUser(userId);
+      if (!user) {
+        return AppResponse.error({
           message: 'User not found',
           status: HttpStatus.NOT_FOUND,
         });
+      }
+
+      let pin = user.transactionPin;
+      pin = hashSync(newPin, genSaltSync(10));
+      await this.usersRepository.save(user);
+
+      return { message: 'Transaction PIN set successfully' };
+    } catch (error) {
+      error.location = `TransactionService.${this.setTransactionPin.name} method`;
+      AppResponse.error(error);
     }
-
-    let pin = user.transactionPin
-    pin = hashSync(newPin, genSaltSync(10));
-    await this.usersRepository.save(user);
-
-    return { message: 'Transaction PIN set successfully' };
   }
 
   async verifyTransactionPin(userId: string, pin: string) {
-    const user = await this.usersRepository.findOne({ where: { id: userId } });
-    if (!user || !user.transactionPin)
-
-               return AppResponse.error({
+    try {
+      const user = await this.usersRepository.findOne({
+        where: { id: userId },
+      });
+      if (!user || !user.transactionPin)
+        return AppResponse.error({
           message: 'PIN not set or user not found',
           status: HttpStatus.NOT_FOUND,
         });
-
 
       const validPin = compareSync(pin, user.transactionPin);
       if (!validPin) {
@@ -54,8 +58,10 @@ export class TransactionService {
         });
       }
 
-
-
-    return { message: 'PIN verified successfully' };
+      return { message: 'PIN verified successfully' };
+    } catch (error) {
+      error.location = `TransactionService.${this.verifyTransactionPin.name} method`;
+      AppResponse.error(error);
+    }
   }
 }

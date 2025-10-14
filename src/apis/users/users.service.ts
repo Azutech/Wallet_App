@@ -158,7 +158,7 @@ export class UsersService {
 
       // save token to db
       const newToken = await this.tokenRepository.createToken({
-          userId: user.id,  // ← Use user.id (UUID) instead of email
+        userId: user.id, // ← Use user.id (UUID) instead of email
         email: user.email,
         code: verCode,
         expiresAt: moment().add(15, 'minutes').toDate(), // token expires in 15 minutes
