@@ -4,10 +4,12 @@ import { TransactionController } from './transaction.controller';
 import { UsersRepository } from 'src/apis/users/repository/user.repository';
 import { WalletsRepository } from 'src/apis/wallets/repository/wallet.repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from 'src/apis/users/entity/user.entity';
-import { Wallet } from 'src/apis/wallets/entity/wallet.entity';
+import { User } from '../users/entity/user.entity';
+import { Wallet } from '../wallets/entity/wallet.entity';
+import { CustomJwtModule } from 'src/guards/jwt/jwt.module';
 @Module({
   imports: [
+    CustomJwtModule,
     TypeOrmModule.forFeature([User, Wallet]),
   ],
   controllers: [TransactionController],

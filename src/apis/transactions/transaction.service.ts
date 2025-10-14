@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { hashSync, genSaltSync, compareSync } from 'bcrypt';
-import { WalletsRepository } from '../apis/wallets/repository/wallet.repository';
-import { UsersRepository } from '../apis/users/repository/user.repository';
+import { WalletsRepository } from '../wallets/repository/wallet.repository';
+import { UsersRepository } from '../users/repository/user.repository';
 import { AppResponse } from 'src/common/app.response';
 
 @Injectable()
