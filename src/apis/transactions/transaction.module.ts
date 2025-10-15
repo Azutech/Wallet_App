@@ -8,10 +8,7 @@ import { User } from '../users/entity/user.entity';
 import { Wallet } from '../wallets/entity/wallet.entity';
 import { CustomJwtModule } from 'src/guards/jwt/jwt.module';
 @Module({
-  imports: [
-    CustomJwtModule,
-    TypeOrmModule.forFeature([User, Wallet]),
-  ],
+  imports: [CustomJwtModule, TypeOrmModule.forFeature([User, Wallet])],
   controllers: [TransactionController],
   providers: [TransactionService, WalletsRepository, UsersRepository],
 })

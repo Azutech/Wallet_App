@@ -27,13 +27,13 @@ export class PaymentsRepository extends Repository<Payment> {
 
   async findWithWallets(userId: string): Promise<Payment | null> {
     return await this.findOne({
-      where: { id: userId },
-      relations: ['wallets'],
+      where: { userId: userId },
+      relations: ['payments'],
     });
   }
-  async findPayment(userId: string): Promise<Payment | null> {
+  async findPayment(paymentId: string): Promise<Payment | null> {
     return await this.findOne({
-      where: { id: userId },
+      where: { id: paymentId },
     });
   }
 }
