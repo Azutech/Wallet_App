@@ -3,6 +3,7 @@ import { hashSync, genSaltSync, compareSync } from 'bcrypt';
 import { WalletsRepository } from '../wallets/repository/wallet.repository';
 import { UsersRepository } from '../users/repository/user.repository';
 import { AppResponse } from 'src/common/app.response';
+import { SetTransactionPinDto } from './dto/transaction.dto';
 
 @Injectable()
 export class TransactionService {
@@ -11,11 +12,20 @@ export class TransactionService {
     private readonly usersRepository: UsersRepository,
   ) {}
 
-  async setTransactionPin(userId: string, newPin: string) {
+  async setTransactionPin(setTransactionPinDto: SetTransactionPinDto) {
     try {
-      if (!/^\d{4,6}$/.test(newPin)) {
+      const { userId, newPin, confirmPin } = setTransactionPinDto;
+
+      if (!/^\d{4}$/.test(newPin)) {
         return AppResponse.error({
-          message: 'PIN must be 4–6 digits.',
+          message: 'PIN must be 4 digits.',
+          status: HttpStatus.BAD_REQUEST,
+        });
+      }
+
+      if (newPin !== confirmPin) {
+        return AppResponse.error({
+          message: 'PINs do not match.',
           status: HttpStatus.BAD_REQUEST,
         });
       }
