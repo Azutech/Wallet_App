@@ -12,7 +12,6 @@ export class PaymentsService {
     private readonly usersRepository: UsersRepository,
   ) {}
 
-
   async viewAllPaymentsForUser(userId: string) {
     try {
       const findUser = await this.usersRepository.findOne({
@@ -51,5 +50,4 @@ export class PaymentsService {
       return AppResponse.error(err);
     }
   }
-
 }

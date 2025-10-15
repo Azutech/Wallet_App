@@ -3,7 +3,7 @@ import { hashSync, genSaltSync, compareSync } from 'bcrypt';
 import { WalletsRepository } from '../wallets/repository/wallet.repository';
 import { UsersRepository } from '../users/repository/user.repository';
 import { AppResponse } from 'src/common/app.response';
-import { SetTransactionPinDto } from './dto/transaction.dto';
+import { SetTransactionPinDto, WalletTransferDto } from './dto/transaction.dto';
 
 @Injectable()
 export class TransactionService {
@@ -69,6 +69,44 @@ export class TransactionService {
       }
 
       return { message: 'PIN verified successfully' };
+    } catch (error) {
+      error.location = `TransactionService.${this.verifyTransactionPin.name} method`;
+      AppResponse.error(error);
+    }
+  }
+
+  async transferFunds(walletTransferDto: WalletTransferDto) {
+    try {
+      const { senderId, pin, recipientEmail, amount } = walletTransferDto;
+      await this.verifyTransactionPin(senderId, pin);
+
+      const sender = await this.walletsRepository.findWalletByUser(senderId);
+
+      const recipient =
+        await this.usersRepository.findUserEmail(recipientEmail);
+
+      if (!recipient) {
+        return AppResponse.error({
+          message: 'Recipient wallet not found',
+          status: HttpStatus.NOT_FOUND,
+        });
+      }
+      const recipientWallet = await this.walletsRepository.findWalletById(
+        recipient.id,
+      );
+
+      if (sender.balance < amount) {
+        return AppResponse.error({
+          message: 'Insufficient Balance',
+          status: HttpStatus.BAD_REQUEST,
+        });
+      }
+
+      sender.balance -= amount;
+      recipientWallet.balance += amount;
+
+      await this.walletsRepository.save([sender, recipientWallet]);
+      return { message: 'Transfer successful' };
     } catch (error) {
       error.location = `TransactionService.${this.verifyTransactionPin.name} method`;
       AppResponse.error(error);

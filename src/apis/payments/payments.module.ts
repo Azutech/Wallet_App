@@ -6,9 +6,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Payment } from './entity/payment.entity';
 import { User } from '../users/entity/user.entity';
 import { UsersRepository } from '../users/repository/user.repository';
+import { CustomJwtModule } from 'src/guards/jwt/jwt.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Payment, User])],
+  imports: [CustomJwtModule, TypeOrmModule.forFeature([Payment, User])],
   controllers: [PaymentsController],
   providers: [PaymentsService, PaymentsRepository, UsersRepository],
 })

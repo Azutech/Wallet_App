@@ -9,6 +9,7 @@ import { User } from './apis/users/entity/user.entity';
 import { UsersModule } from './apis/users/users.module';
 import { PaymentsModule } from './apis/payments/payments.module';
 import { TransactionModule } from './apis/transactions/transaction.module';
+import { FlutterwaveModule } from './flutterwave/flutterwave.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { TransactionModule } from './apis/transactions/transaction.module';
     NotificationModule,
     PaymentsModule,
     TransactionModule,
+    FlutterwaveModule,
   ],
   controllers: [AppController],
   providers: [AppService],
