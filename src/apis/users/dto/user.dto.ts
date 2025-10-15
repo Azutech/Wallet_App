@@ -9,3 +9,8 @@ export class UserDto {
   userId?: string; // optional, for updates
   isActive?: boolean; // optional, for update
 }
+
+export class LoginDto {
+  email: string;
+  password: string;
+}

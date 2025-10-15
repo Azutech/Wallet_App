@@ -15,10 +15,7 @@ import {
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { Response } from 'express';
-import { AppResponse } from 'src/common/app.response';
 import { JwtAuthGuard } from 'src/guards/jwt/jwt.guard';
-
-const { success } = AppResponse;
 
 @Controller('payments')
 export class PaymentsController {
@@ -31,7 +28,7 @@ export class PaymentsController {
     const results = await this.paymentsService.viewAllPaymentsForUser(userId);
     return res
       .status(HttpStatus.OK)
-      .json(success('Payments fetched successfully', 200, results));
+      .json({ message: 'Payments fetched successfully', results });
   }
 
   @UseGuards(JwtAuthGuard)
@@ -43,6 +40,6 @@ export class PaymentsController {
     const results = await this.paymentsService.viewPaymentDetails(paymentId);
     return res
       .status(HttpStatus.OK)
-      .json(success('Payments fetched successfully', 200, results));
+      .json({ message: 'Payments fetched successfully', results });
   }
 }
