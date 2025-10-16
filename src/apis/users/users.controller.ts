@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UserDto } from './dto/user.dto';
+import { LoginDto, UserDto } from './dto/user.dto';
 import { Response } from 'express';
 import { JwtAuthGuard } from 'src/guards/jwt/jwt.guard';
 
@@ -25,6 +25,13 @@ export class UsersController {
     return res
       .status(HttpStatus.CREATED)
       .json({ message: 'User created successfully', result });
+  }
+  @Post('login')
+  async userLogin(@Res() res: Response, @Body() loginDto: LoginDto) {
+    const result = await this.usersService.login(loginDto);
+    return res
+      .status(HttpStatus.CREATED)
+      .json({ message: 'User Logged in', result });
   }
 
   @UseGuards(JwtAuthGuard)

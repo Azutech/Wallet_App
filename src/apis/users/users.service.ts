@@ -136,6 +136,21 @@ export class UsersService {
 
       throw new BadRequestException(messages[findUserEmail.status]);
     }
+
+    const validPassword = compareSync(password, findUserEmail?.password);
+
+    if (!validPassword) {
+      throw new BadRequestException(`Wrong Password`);
+    }
+
+    const authTokenParam = {
+      userId: findUserEmail?.id,
+    };
+
+    return {
+      auth: this.jwtService.createEncryptedToken(authTokenParam),
+      role: findUserEmail?.id,
+    };
   }
 
   async dashboard(userId: string) {
