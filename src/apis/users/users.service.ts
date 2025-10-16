@@ -19,6 +19,7 @@ import { Wallet } from '../wallets/entity/wallet.entity';
 import { TokenRepository } from './repository/token.repository';
 import { generateRandomNumbers } from './enums/random.enum';
 import { trimObjectStrings } from 'src/common/utils/trim-object.util';
+import { Status } from './enums/enums';
 
 @Injectable()
 export class UsersService {
@@ -118,6 +119,22 @@ export class UsersService {
     const findUserEmail = await this.usersRepository.findUserEmail(email);
     if (!findUserEmail) {
       throw new NotFoundException(`User not found`);
+    }
+
+    const inactiveStatuses = [
+      Status.PENDING,
+      Status.SUSPENDED,
+      Status.DEACTIVATED,
+    ];
+
+    if (inactiveStatuses.includes(findUserEmail?.status as Status)) {
+      const messages = {
+        [Status.PENDING]: 'Please verify your email before logging in',
+        [Status.SUSPENDED]: 'Your account has been suspended',
+        [Status.DEACTIVATED]: 'Your account has been deactivated',
+      };
+
+      throw new BadRequestException(messages[findUserEmail.status]);
     }
   }
 
