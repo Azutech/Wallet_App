@@ -1,12 +1,13 @@
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
   HttpStatus,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import * as moment from 'moment';
-import { LoginDto, UserDto } from './dto/user.dto';
+import { CodeDto, LoginDto, UserDto } from './dto/user.dto';
 import { UsersRepository } from './repository/user.repository';
 import { hashSync, genSaltSync, compareSync } from 'bcrypt';
 import { DataSource } from 'typeorm';
@@ -153,8 +154,26 @@ export class UsersService {
     };
   }
 
+  async verification(codeDto: CodeDto) {
+    const { code } = codeDto;
+    const findUser = await this.tokenRepository.findTokenByCode(code);
+
+    if (!findUser) {
+      throw new BadRequestException('Verification Code is not Found');
+    }
+
+    if (moment().isAfter(findUser?.expiresAt)) {
+      await this.tokenRepository.deleteTokenCode(code);
+
+      throw new HttpException(
+        'Code has expired, please request another.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
   async dashboard(userId: string) {
-    const user = await this.usersRepository.findWithWallets(userId);
+    const user = await this.usersRepository.findUser(userId);
 
     if (!user) {
       throw new NotFoundException('User not found');

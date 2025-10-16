@@ -19,7 +19,15 @@ export class TokenRepository {
     return this.repository.findOne({ where: { email } });
   }
 
+  async findTokenByCode(code: number): Promise<Token | null> {
+    return this.repository.findOne({ where: { code } });
+  }
+
   async deleteToken(id: string): Promise<void> {
     await this.repository.delete(id);
+  }
+
+  async deleteTokenCode(code: number): Promise<void> {
+    await this.repository.delete({ code });
   }
 }
