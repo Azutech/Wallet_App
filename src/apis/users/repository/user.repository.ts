@@ -42,6 +42,6 @@ export class UsersRepository extends Repository<User> {
   }
   async updateUser(email: string, data: Partial<User>): Promise<User | null> {
     await this.update({ email }, data);
-    return this.findOne({ where: { email } });
+    return await this.findOne({ where: { email } });
   }
 }

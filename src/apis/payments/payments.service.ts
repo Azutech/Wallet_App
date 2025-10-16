@@ -2,7 +2,6 @@ import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { PaymentsRepository } from './repository/payments.repository';
 import { UsersRepository } from '../users/repository/user.repository';
-import e from 'express';
 
 @Injectable()
 export class PaymentsService {

@@ -170,6 +170,20 @@ export class UsersService {
         HttpStatus.BAD_REQUEST,
       );
     }
+
+    const verifyUser = await this.usersRepository.updateUser(findUser?.email, {
+      isActive: true,
+      status: Status.ACTIVE,
+    });
+
+    await this.tokenRepository.deleteTokenCode(code);
+
+    const { password, ...user } = verifyUser;
+
+    return {
+      message: 'User verified successfully',
+      user,
+    };
   }
 
   async dashboard(userId: string) {
