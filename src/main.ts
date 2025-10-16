@@ -4,6 +4,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { HttpLogger } from './common/middleware/http-logger.middleware';
 import { AppModule } from './app.module';
+import { GlobalExceptionFilter } from './common/app.response';
 
 async function bootstrap() {
   const logger = new Logger('Wallet-Ops-V1');
@@ -15,6 +16,7 @@ async function bootstrap() {
   const port = configService.get<string>('PORT');
   app.setGlobalPrefix('api/v1');
   app.use(new HttpLogger().use);
+  app.useGlobalFilters(new GlobalExceptionFilter());
 
   app.set('trust proxy', 1); // trust first proxy
 

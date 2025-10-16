@@ -7,6 +7,9 @@ import { WalletsModule } from './apis/wallets/wallets.module';
 import { NotificationModule } from './apis/notification/notification.module';
 import { User } from './apis/users/entity/user.entity';
 import { UsersModule } from './apis/users/users.module';
+import { PaymentsModule } from './apis/payments/payments.module';
+import { TransactionModule } from './apis/transactions/transaction.module';
+import { FlutterwaveModule } from './flutterwave/flutterwave.module';
 
 @Module({
   imports: [
@@ -49,6 +52,9 @@ import { UsersModule } from './apis/users/users.module';
     UsersModule,
     WalletsModule,
     NotificationModule,
+    PaymentsModule,
+    TransactionModule,
+    FlutterwaveModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -10,13 +10,10 @@ import {
   HttpStatus,
   UseGuards,
 } from '@nestjs/common';
-import { AppResponse } from 'src/common/app.response';
 import { UsersService } from './users.service';
-import { UserDto } from './dto/user.dto';
+import { LoginDto, UserDto } from './dto/user.dto';
 import { Response } from 'express';
 import { JwtAuthGuard } from 'src/guards/jwt/jwt.guard';
-
-const { success } = AppResponse;
 
 @Controller('users')
 export class UsersController {
@@ -27,12 +24,14 @@ export class UsersController {
     const result = await this.usersService.createUser(createUserDto);
     return res
       .status(HttpStatus.CREATED)
-      .json(success('User created successfully', 201, result));
+      .json({ message: 'User created successfully', result });
   }
-
-  @Get()
-  asyfindAll() {
-    return this.usersService.findAll();
+  @Post('login')
+  async userLogin(@Res() res: Response, @Body() loginDto: LoginDto) {
+    const result = await this.usersService.login(loginDto);
+    return res
+      .status(HttpStatus.CREATED)
+      .json({ message: 'User Logged in', result });
   }
 
   @UseGuards(JwtAuthGuard)
@@ -42,11 +41,6 @@ export class UsersController {
     const result = await this.usersService.dashboard(userId);
     return res
       .status(HttpStatus.OK)
-      .json(success('User retrieved successfully', 200, result));
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+      .json({ message: 'User retrieved successfully', result });
   }
 }

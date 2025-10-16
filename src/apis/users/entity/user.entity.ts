@@ -7,6 +7,8 @@ import {
 } from 'typeorm';
 import { Wallet } from '../../wallets/entity/wallet.entity';
 import { Token } from './token.entity';
+import { Payment } from '../../payments/entity/payment.entity';
+import { Status } from '../enums/enums';
 
 @Entity({ name: 'users' })
 export class User {
@@ -35,6 +37,9 @@ export class User {
   avatar: string;
 
   @Column()
+  NIN: string;
+
+  @Column()
   dateOfBirth: Date;
 
   @CreateDateColumn({ type: 'timestamp' })
@@ -43,15 +48,21 @@ export class User {
   @Column({ default: false })
   isActive: boolean;
 
+  @Column({ nullable: true })
+  transactionPin?: string;
+
   @Column({
     type: 'enum',
-    enum: ['pending', 'verified', 'suspended', 'deactivated'],
-    default: 'pending',
+    enum: Status,
+    default: Status.PENDING,
   })
-  status: 'pending' | 'verified' | 'suspended' | 'deactivated';
+  status: string;
 
   @OneToMany(() => Wallet, (w) => w.user)
   wallets: Wallet[];
+
+  @OneToMany(() => Payment, (p) => p.user)
+  payments: Payment[];
 
   @OneToMany(() => Token, (t) => t.user)
   tokens: Token[];

@@ -16,4 +16,15 @@ export class WalletsRepository extends Repository<Wallet> {
     const newWallet = this.create(walletData);
     return await this.save(newWallet);
   }
+
+  async findWalletById(userId: string): Promise<Wallet | null> {
+    return await this.findOne({
+      where: { id: userId },
+    });
+  }
+  async findWalletByUser(userId: string): Promise<Wallet | null> {
+    return await this.findOne({
+      where: { userId: userId },
+    });
+  }
 }

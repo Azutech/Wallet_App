@@ -30,4 +30,18 @@ export class UsersRepository extends Repository<User> {
       relations: ['wallets'],
     });
   }
+  async findUser(userId: string): Promise<User | null> {
+    return await this.findOne({
+      where: { id: userId },
+    });
+  }
+  async findUserEmail(email: string): Promise<User | null> {
+    return await this.findOne({
+      where: { email: email },
+    });
+  }
+  async updateUser(email: string, data: Partial<User>): Promise<User | null> {
+    await this.update({ email }, data);
+    return this.findOne({ where: { email } });
+  }
 }

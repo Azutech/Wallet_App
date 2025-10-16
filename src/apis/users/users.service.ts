@@ -1,18 +1,26 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import * as moment from 'moment';
-import { UserDto } from './dto/user.dto';
+import { CodeDto, LoginDto, UserDto } from './dto/user.dto';
 import { UsersRepository } from './repository/user.repository';
 import { hashSync, genSaltSync, compareSync } from 'bcrypt';
 import { DataSource } from 'typeorm';
 import { WalletsRepository } from '../wallets/repository/wallet.repository';
 import { validatePassword } from './enums/passwordValidator.enum';
-import { AppResponse } from 'src/common/app.response';
+// import { AppResponse } from 'src/common/app.response';
 import { JwtService } from 'src/guards/jwt/jwt.service';
 import { User } from './entity/user.entity';
 import { Wallet } from '../wallets/entity/wallet.entity';
 import { TokenRepository } from './repository/token.repository';
 import { generateRandomNumbers } from './enums/random.enum';
 import { trimObjectStrings } from 'src/common/utils/trim-object.util';
+import { Status } from './enums/enums';
 
 @Injectable()
 export class UsersService {
@@ -42,20 +50,15 @@ export class UsersService {
         where: { email: dto.email },
       });
       if (existingUser) {
-        AppResponse.error({
-          message: 'User with that email already exists',
-          status: HttpStatus.CONFLICT,
-        });
+        throw new ConflictException('User with that email already exists');
       }
 
       const checkPassword = validatePassword(password);
 
       if (!checkPassword) {
-        AppResponse.error({
-          message:
-            'Password must be atleast 8 characters long and contain a number, a special character and an uppercase letter',
-          status: HttpStatus.BAD_REQUEST,
-        });
+        throw new BadRequestException(
+          'Password must be atleast 8 characters long and contain a number, a special character and an uppercase letter',
+        );
       }
 
       password = hashSync(password, genSaltSync());
@@ -105,86 +108,108 @@ export class UsersService {
         await queryRunner.rollbackTransaction();
       }
       err.location = `UsersService.${this.createUser.name} method`;
-      AppResponse.error(err);
+      throw err;
     } finally {
       await queryRunner.release();
     }
+  }
 
-    try {
-      await this.sendMailToken(dto.email);
-    } catch (emailError) {
-      console.error('Email sending failed:', emailError);
+  async login(loginDto: LoginDto) {
+    const { email, password } = loginDto;
+
+    const findUserEmail = await this.usersRepository.findUserEmail(email);
+    if (!findUserEmail) {
+      throw new NotFoundException(`User not found`);
+    }
+
+    const inactiveStatuses = [
+      Status.PENDING,
+      Status.SUSPENDED,
+      Status.DEACTIVATED,
+    ];
+
+    if (inactiveStatuses.includes(findUserEmail?.status as Status)) {
+      const messages = {
+        [Status.PENDING]: 'Please verify your email before logging in',
+        [Status.SUSPENDED]: 'Your account has been suspended',
+        [Status.DEACTIVATED]: 'Your account has been deactivated',
+      };
+
+      throw new BadRequestException(messages[findUserEmail.status]);
+    }
+
+    const validPassword = compareSync(password, findUserEmail?.password);
+
+    if (!validPassword) {
+      throw new BadRequestException(`Wrong Password`);
+    }
+
+    const authTokenParam = {
+      userId: findUserEmail?.id,
+    };
+
+    return {
+      auth: this.jwtService.createEncryptedToken(authTokenParam),
+      role: findUserEmail?.id,
+    };
+  }
+
+  async verification(codeDto: CodeDto) {
+    const { code } = codeDto;
+    const findUser = await this.tokenRepository.findTokenByCode(code);
+
+    if (!findUser) {
+      throw new BadRequestException('Verification Code is not Found');
+    }
+
+    if (moment().isAfter(findUser?.expiresAt)) {
+      await this.tokenRepository.deleteTokenCode(code);
+
+      throw new HttpException(
+        'Code has expired, please request another.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
   async dashboard(userId: string) {
-    try {
-      const user = await this.usersRepository.findWithWallets(userId);
+    const user = await this.usersRepository.findUser(userId);
 
-      if (!user) {
-        AppResponse.error({
-          message: 'User not found',
-          status: HttpStatus.NOT_FOUND,
-        });
-      }
-
-      const { password, ...safeUser } = user;
-
-      return {
-        user: safeUser,
-      };
-    } catch (err) {
-      err.location = `UsersService.${this.dashboard.name} method`;
-      AppResponse.error(err);
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
+
+    const { password, ...safeUser } = user;
+
+    return {
+      user: safeUser,
+    };
   }
 
   async sendMailToken(email: string) {
-    try {
-      // check if user exists
-      const user = await this.usersRepository.findOne({
-        where: { email },
-      });
+    // check if user exists
+    const user = await this.usersRepository.findUserEmail(email);
 
-      if (!user) {
-        AppResponse.error({
-          message: 'User with that email does not exist',
-          status: HttpStatus.NOT_FOUND,
-        });
-      }
-
-      // generate token
-      const verCode = generateRandomNumbers();
-
-      // save token to db
-      const newToken = await this.tokenRepository.createToken({
-          userId: user.id,  // ← Use user.id (UUID) instead of email
-        email: user.email,
-        code: verCode,
-        expiresAt: moment().add(15, 'minutes').toDate(), // token expires in 15 minutes
-      });
-
-      // send token to user's email - TODO
-
-      return {
-        message: 'Token sent to email',
-        newToken,
-      };
-    } catch (err) {
-      err.location = `UsersService.${this.sendMailToken.name} method`;
-      AppResponse.error(err);
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
-  }
 
-  findAll() {
-    return `This action returns all users`;
-  }
+    // generate token
+    const verCode = generateRandomNumbers();
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
+    // save token to db
+    const newToken = await this.tokenRepository.createToken({
+      userId: user.id, // ← Use user.id (UUID) instead of email
+      email: user.email,
+      code: verCode,
+      expiresAt: moment().add(15, 'minutes').toDate(), // token expires in 15 minutes
+    });
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+    // send token to user's email - TODO
+
+    return {
+      message: 'Token sent to email',
+      newToken,
+    };
   }
 }
