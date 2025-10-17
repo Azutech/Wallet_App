@@ -18,7 +18,7 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column()
+  @Column({type: 'varchar'})
   firstName: string;
 
   @Column()
@@ -36,11 +36,17 @@ export class User {
   @Column()
   avatar: string;
 
-  @Column()
-  NIN: string;
+  @Column({ nullable: true, default: '' })
+  NIN?: string;
 
-  @Column()
-  dateOfBirth: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  dateOfBirth?: Date | null;
+
+  @Column({ nullable: true, default: '' })
+  nextOfKinName?: string;
+
+  @Column({ nullable: true, default: '', type: 'varchar' })
+  address?: string;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
@@ -48,7 +54,7 @@ export class User {
   @Column({ default: false })
   isActive: boolean;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, default: '' })
   transactionPin?: string;
 
   @Column({
