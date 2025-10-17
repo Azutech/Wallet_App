@@ -21,4 +21,5 @@ export class CodeDto {
 export class ResetPasswordDto {
   readonly newPassword: string;
   readonly confirmPassword: string;
+  token: string
 }

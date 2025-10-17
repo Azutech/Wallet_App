@@ -251,9 +251,9 @@ export class UsersService {
 
   async resetPassword(
     resetPasswordDto: ResetPasswordDto,
-    token: string,
+
   ): Promise<any> {
-    const { newPassword, confirmPassword } = resetPasswordDto;
+    const { newPassword, confirmPassword, token } = resetPasswordDto;
 
     let decoded;
     try {

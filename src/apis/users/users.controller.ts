@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CodeDto, LoginDto, UserDto } from './dto/user.dto';
+import { CodeDto, LoginDto, ResetPasswordDto, UserDto } from './dto/user.dto';
 import { Response } from 'express';
 import { JwtAuthGuard } from 'src/guards/jwt/jwt.guard';
 
@@ -36,6 +36,27 @@ export class UsersController {
   @Post('verification')
   async verification(@Res() res: Response, @Body() codeDto: CodeDto) {
     const result = await this.usersService.verification(codeDto);
+    return res
+      .status(HttpStatus.CREATED)
+      .json({ message: 'User Logged in', result });
+  }
+  @Post('forgotPassword')
+  async forgotPassword(@Res() res: Response, @Body('email') email: string) {
+    const result = await this.usersService.forgotPassword(email);
+    return res
+      .status(HttpStatus.CREATED)
+      .json({ message: 'Mail sent to User', result });
+  }
+  @Post('confirmCode')
+  async confirmCode(@Res() res: Response, @Body('code') code: number) {
+    const result = await this.usersService.confirmCode(code);
+    return res
+      .status(HttpStatus.CREATED)
+      .json({ message: 'Code confirmed', result });
+  }
+  @Post('resetPassword')
+  async resetPassword(@Res() res: Response, @Body() resetPasswordDto: ResetPasswordDto) {
+    const result = await this.usersService.resetPassword(resetPasswordDto);
     return res
       .status(HttpStatus.CREATED)
       .json({ message: 'User Logged in', result });
