@@ -8,7 +8,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as moment from 'moment';
-import { CodeDto, LoginDto, ResetPasswordDto, UserDto } from './dto/user.dto';
+import { CodeDto, LoginDto, NINDto, ResetPasswordDto, UserDto } from './dto/user.dto';
 import { UsersRepository } from './repository/user.repository';
 import { hashSync, genSaltSync, compareSync } from 'bcrypt';
 import { DataSource } from 'typeorm';
@@ -22,6 +22,7 @@ import { TokenRepository } from './repository/token.repository';
 import { generateRandomNumbers } from './enums/random.enum';
 import { trimObjectStrings } from 'src/common/utils/trim-object.util';
 import { Status } from './enums/enums';
+import { VerificationService } from '../verification/verification.service';
 
 @Injectable()
 export class UsersService {
@@ -30,6 +31,7 @@ export class UsersService {
     private readonly walletsRepository: WalletsRepository,
     private readonly tokenRepository: TokenRepository,
     readonly jwtService: JwtService,
+    readonly verificationService: VerificationService,
 
     private readonly dataSource: DataSource,
   ) {}
@@ -249,10 +251,7 @@ export class UsersService {
     return token;
   }
 
-  async resetPassword(
-    resetPasswordDto: ResetPasswordDto,
-
-  ): Promise<any> {
+  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<any> {
     const { newPassword, confirmPassword, token } = resetPasswordDto;
 
     let decoded;
@@ -295,6 +294,28 @@ export class UsersService {
     });
 
     return updatePassword?.email;
+  }
+
+  async verifyBVN(nINDto : NINDto) {
+
+    const {userId, NIN} = nINDto
+    const findUser = await this.usersRepository.findUser(userId);
+    if (!findUser) {
+      throw new NotFoundException('User is not found');
+    }
+
+    const userNin = await this.verificationService.verifyNIN(NIN);
+
+    await this.usersRepository.updateUserId(findUser.id, {
+      NIN: userNin,
+    });
+
+    const { password, ...user } = findUser;
+
+    return {
+      message : `NIN verified successfully`,
+      user,
+    };
   }
 
   async sendMailToken(email: string) {
