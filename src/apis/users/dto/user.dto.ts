@@ -17,3 +17,8 @@ export class LoginDto {
 export class CodeDto {
   code: number;
 }
+
+export class ResetPasswordDto {
+  readonly newPassword: string;
+  readonly confirmPassword: string;
+}

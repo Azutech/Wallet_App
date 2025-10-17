@@ -5,9 +5,10 @@ import {
   HttpStatus,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import * as moment from 'moment';
-import { CodeDto, LoginDto, UserDto } from './dto/user.dto';
+import { CodeDto, LoginDto, ResetPasswordDto, UserDto } from './dto/user.dto';
 import { UsersRepository } from './repository/user.repository';
 import { hashSync, genSaltSync, compareSync } from 'bcrypt';
 import { DataSource } from 'typeorm';
@@ -198,6 +199,102 @@ export class UsersService {
     return {
       user: safeUser,
     };
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.usersRepository.findUserEmail(email);
+    if (user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const verCode = generateRandomNumbers();
+    const newToken = await this.tokenRepository.createToken({
+      userId: user.id, // ← Use user.id (UUID) instead of email
+      email: user.email,
+      code: verCode,
+      expiresAt: moment().add(15, 'minutes').toDate(), // token expires in 15 minutes
+    });
+
+    return verCode;
+  }
+
+  async confirmCode(code: number): Promise<any> {
+    const theCode = await this.tokenRepository.findTokenByCode(code);
+
+    if (!theCode) {
+      throw new NotFoundException(`Code not Found`);
+    }
+
+    const theUser = await this.usersRepository.findUserEmail(theCode.email);
+    if (!theUser) {
+      throw new NotFoundException('User not Found');
+    }
+
+    if (moment().isAfter(theCode?.expiresAt)) {
+      await this.tokenRepository.deleteTokenCode(code);
+      throw new HttpException(
+        'Token has expired. Please request a new one',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await this.tokenRepository.deleteTokenCode(code);
+
+    const authTokenParam = {
+      userId: theUser?.id,
+    };
+
+    const token = this.jwtService.createEncryptedToken(authTokenParam);
+
+    return token;
+  }
+
+  async resetPassword(
+    resetPasswordDto: ResetPasswordDto,
+    token: string,
+  ): Promise<any> {
+    const { newPassword, confirmPassword } = resetPasswordDto;
+
+    let decoded;
+    try {
+      decoded = this.jwtService.verifyAndDecryptToken(token);
+    } catch (error) {
+      throw new UnauthorizedException(`Invalid or expired token.`);
+    }
+
+    const user = await this.usersRepository.findUser(decoded.userId);
+
+    if (!user) {
+      throw new NotFoundException(`User not Found`);
+    }
+
+    const checkPassword = validatePassword(newPassword);
+
+    if (!checkPassword) {
+      throw new BadRequestException(
+        'Password must be atleast 8 characters long and contain a number, a special character and an uppercase letter',
+      );
+    }
+
+    if (newPassword !== confirmPassword) {
+      throw new BadRequestException('Password does not match');
+    }
+    const validPassword = compareSync(newPassword, user?.password);
+    if (validPassword) {
+      throw new BadRequestException(
+        'Your new password must be different to previously used passwords',
+      );
+    }
+
+    // Hash the new password
+    const hashedPassword = hashSync(newPassword, genSaltSync());
+
+    // Update user's password in the database
+    const updatePassword = await this.usersRepository.updateUserId(user.id, {
+      password: hashedPassword,
+    });
+
+    return updatePassword?.email;
   }
 
   async sendMailToken(email: string) {
