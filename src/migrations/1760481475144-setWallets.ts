@@ -4,8 +4,6 @@ export class SetWallets1760481475144 implements MigrationInterface {
   name = 'SetWallets1760481475144';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-
-
     await queryRunner.query(
       `CREATE TYPE "public"."payment_status_enum" AS ENUM('pending', 'success', 'failed', 'refunded')`,
     );

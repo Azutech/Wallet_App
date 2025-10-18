@@ -10,6 +10,7 @@ import { UsersModule } from './apis/users/users.module';
 import { PaymentsModule } from './apis/payments/payments.module';
 import { TransactionModule } from './apis/transactions/transaction.module';
 import { FlutterwaveModule } from './flutterwave/flutterwave.module';
+import { VerificationModule } from './apis/verification/verification.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { FlutterwaveModule } from './flutterwave/flutterwave.module';
     PaymentsModule,
     TransactionModule,
     FlutterwaveModule,
+    VerificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
