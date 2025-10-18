@@ -18,19 +18,19 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: true })
   firstName: string;
 
-  @Column()
+  @Column({ type: 'varchar', nullable: true })
   lastName: string;
 
   @Column()
   password: string;
 
-  @Column()
+  @Column({ type: 'varchar', nullable: true })
   phoneNumber: string;
 
-  @Column()
+  @Column({ type: 'varchar', nullable: true })
   BVN: string;
 
   @Column()

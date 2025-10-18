@@ -12,7 +12,13 @@ import {
   Put,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CodeDto, LoginDto, NINDto, ResetPasswordDto, UserDto } from './dto/user.dto';
+import {
+  CodeDto,
+  LoginDto,
+  NINDto,
+  ResetPasswordDto,
+  UserDto,
+} from './dto/user.dto';
 import { Response } from 'express';
 import { JwtAuthGuard } from 'src/guards/jwt/jwt.guard';
 
@@ -65,17 +71,19 @@ export class UsersController {
       .status(HttpStatus.CREATED)
       .json({ message: 'User Logged in', result });
   }
+
+  @UseGuards(JwtAuthGuard)
   @Put('verifyBVN')
   async verifyBVN(
     @Req() req: any,
     @Res() res: Response,
     @Body() nINDto: NINDto,
   ) {
-    nINDto.userId = req.user.userId
+    nINDto.userId = req.user.userId;
     const result = await this.usersService.verifyBVN(nINDto);
     return res
       .status(HttpStatus.CREATED)
-      .json({ message: 'User Logged in', result });
+      .json({ message: 'Password  Updated', result });
   }
 
   @UseGuards(JwtAuthGuard)

@@ -8,7 +8,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as moment from 'moment';
-import { CodeDto, LoginDto, NINDto, ResetPasswordDto, UserDto } from './dto/user.dto';
+import {
+  CodeDto,
+  LoginDto,
+  NINDto,
+  ResetPasswordDto,
+  UserDto,
+} from './dto/user.dto';
 import { UsersRepository } from './repository/user.repository';
 import { hashSync, genSaltSync, compareSync } from 'bcrypt';
 import { DataSource } from 'typeorm';
@@ -153,7 +159,7 @@ export class UsersService {
 
     return {
       auth: this.jwtService.createEncryptedToken(authTokenParam),
-      role: findUserEmail?.id,
+      userId: findUserEmail?.id,
     };
   }
 
@@ -205,9 +211,10 @@ export class UsersService {
 
   async forgotPassword(email: string) {
     const user = await this.usersRepository.findUserEmail(email);
-    if (user) {
+    if (!user) {
       throw new NotFoundException('User not found');
     }
+    console.log(user);
 
     const verCode = generateRandomNumbers();
     const newToken = await this.tokenRepository.createToken({
@@ -296,9 +303,8 @@ export class UsersService {
     return updatePassword?.email;
   }
 
-  async verifyBVN(nINDto : NINDto) {
-
-    const {userId, NIN} = nINDto
+  async verifyBVN(nINDto: NINDto) {
+    const { userId, NIN } = nINDto;
     const findUser = await this.usersRepository.findUser(userId);
     if (!findUser) {
       throw new NotFoundException('User is not found');
@@ -307,13 +313,13 @@ export class UsersService {
     const userNin = await this.verificationService.verifyNIN(NIN);
 
     await this.usersRepository.updateUserId(findUser.id, {
-      NIN: userNin,
+      NIN: nINDto.NIN,
     });
 
     const { password, ...user } = findUser;
 
     return {
-      message : `NIN verified successfully`,
+      message: `NIN verified successfully`,
       user,
     };
   }
