@@ -22,6 +22,12 @@ export class FlutterwaveService {
         country: 'NG', //Pass either NG, GH, KE, UG, ZA or TZ to get list of banks in Nigeria, Ghana, Kenya, Uganda, South Africa or Tanzania respectively
       };
       const response = await this.flw.Bank.country(payload);
+
+         if (response?.data) {
+      response.data = response.data.sort((a, b) => 
+        a.name.localeCompare(b.name)
+      );
+    }
       return response;
     } catch (error) {
       console.log(error);

@@ -29,6 +29,7 @@ import { generateRandomNumbers } from './enums/random.enum';
 import { trimObjectStrings } from 'src/common/utils/trim-object.util';
 import { Status } from './enums/enums';
 import { VerificationService } from '../verification/verification.service';
+import { CurrencyEnum, WalletTypeEnum } from '../wallets/enum/enum';
 
 @Injectable()
 export class UsersService {
@@ -82,15 +83,36 @@ export class UsersService {
       await usersRepo.save(user);
 
       // create wallet (store returned value)
-      const wallet = await walletsRepo.create({
-        userId: user.id,
-        currency: 'NGN',
-      });
+      // const wallet = await walletsRepo.create({
+      //   userId: user.id,
+      //   currency: 'NGN',
+      // });
 
-      await walletsRepo.save(wallet);
+      // await walletsRepo.save(wallet);
+
+      const walletData = [
+        {
+          userId: user.id,
+          type: WalletTypeEnum.FIAT,
+          currency: CurrencyEnum.NGN,
+        },
+        {
+          userId: user.id,
+          type: WalletTypeEnum.FIAT,
+          currency: CurrencyEnum.USD,
+        },
+        {
+          userId: user.id,
+          type: WalletTypeEnum.CRYPTO,
+          currency: CurrencyEnum.USDT,
+          network: 'TRC20',
+        },
+      ];
+
+      const wallets = await walletsRepo.save(walletData);
+      user.wallets = wallets;
 
       // assign wallet reference before commit
-      user.wallets = [wallet];
 
       const authTokenParam = {
         userId: user?.id,
