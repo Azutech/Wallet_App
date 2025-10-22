@@ -23,11 +23,11 @@ export class FlutterwaveService {
       };
       const response = await this.flw.Bank.country(payload);
 
-         if (response?.data) {
-      response.data = response.data.sort((a, b) => 
-        a.name.localeCompare(b.name)
-      );
-    }
+      if (response?.data) {
+        response.data = response.data.sort((a, b) =>
+          a.name.localeCompare(b.name),
+        );
+      }
       return response;
     } catch (error) {
       console.log(error);

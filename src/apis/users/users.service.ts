@@ -82,14 +82,6 @@ export class UsersService {
 
       await usersRepo.save(user);
 
-      // create wallet (store returned value)
-      // const wallet = await walletsRepo.create({
-      //   userId: user.id,
-      //   currency: 'NGN',
-      // });
-
-      // await walletsRepo.save(wallet);
-
       const walletData = [
         {
           userId: user.id,
