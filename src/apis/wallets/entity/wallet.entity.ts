@@ -8,8 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { User } from '../../users/entity/user.entity';
-import { CurrencyEnum } from '../enum/enum';
-
+import { CurrencyEnum, WalletTypeEnum } from '../enum/enum';
 
 @Entity({ name: 'wallets' })
 export class Wallet {
@@ -23,12 +22,19 @@ export class Wallet {
   @Column()
   userId: string;
 
-    @Column({
+  @Column({
     type: 'enum',
     enum: CurrencyEnum,
     default: CurrencyEnum.NGN,
   })
   currency: CurrencyEnum;
+
+  @Column({
+    type: 'enum',
+    enum: WalletTypeEnum,
+    default: WalletTypeEnum.FIAT,
+  })
+  walletTypeEnum: WalletTypeEnum;
 
   @Column({ nullable: true })
   network?: string; // for crypto e.g. 'ERC20', 'TRC20'
