@@ -8,6 +8,8 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { User } from '../../users/entity/user.entity';
+import { CurrencyEnum } from '../enum/enum';
+
 
 @Entity({ name: 'wallets' })
 export class Wallet {
@@ -21,12 +23,23 @@ export class Wallet {
   @Column()
   userId: string;
 
-  // store currency code (USD, NGN...) if needed
-  @Column({ length: 3, default: 'NGN' })
-  currency: string;
+    @Column({
+    type: 'enum',
+    enum: CurrencyEnum,
+    default: CurrencyEnum.NGN,
+  })
+  currency: CurrencyEnum;
 
-  // store balance in smallest currency unit (e.g. kobo/ngn cents) as bigint
-  @Column({ type: 'bigint', default: 0 })
+  @Column({ nullable: true })
+  network?: string; // for crypto e.g. 'ERC20', 'TRC20'
+
+  @Column({ nullable: true })
+  address?: string; // for crypto wallet address
+
+  @Column({ nullable: true })
+  providerWalletId?: string; // e.g. ID from payment gateway or crypto custodian
+
+  @Column({ type: 'decimal', precision: 18, scale: 8, default: 0 })
   balance: number; // keep as bigint in entity to avoid JS number issues
 
   @CreateDateColumn()
