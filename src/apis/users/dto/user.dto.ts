@@ -27,3 +27,7 @@ export class NINDto {
   readonly NIN: string;
   userId: string;
 }
+export class BVNDto {
+  readonly BVN: string;
+  userId: string;
+}

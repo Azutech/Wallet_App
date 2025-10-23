@@ -42,4 +42,31 @@ export class VerificationService {
       );
     }
   }
+  async verifyBVN(bvn: string): Promise<any> {
+    try {
+      const url = `${this.baseUrl}/v2/api/identity/ng/nin`;
+
+      const headers = {
+        token: this.apiKey, // 👈 Correct header per documentation
+        'Content-Type': 'application/json',
+      };
+
+      const body = {
+        id: bvn,
+        isSubjectConsent: true,
+      };
+
+      const response = await firstValueFrom(
+        this.httpService.post(url, body, { headers }),
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error('NIN Verification failed:', error?.response?.data || error);
+      throw new HttpException(
+        error?.response?.data || 'Failed to verify BVN',
+        error?.response?.status || HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
 }

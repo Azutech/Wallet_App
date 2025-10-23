@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import * as moment from 'moment';
 import {
+  BVNDto,
   CodeDto,
   LoginDto,
   NINDto,
@@ -317,7 +318,7 @@ export class UsersService {
     return updatePassword?.email;
   }
 
-  async verifyBVN(nINDto: NINDto) {
+  async verifyNIN(nINDto: NINDto) {
     const { userId, NIN } = nINDto;
     const findUser = await this.usersRepository.findUser(userId);
     if (!findUser) {
@@ -328,6 +329,26 @@ export class UsersService {
 
     await this.usersRepository.updateUserId(findUser.id, {
       NIN: nINDto.NIN,
+    });
+
+    const { password, ...user } = findUser;
+
+    return {
+      message: `NIN verified successfully`,
+      user,
+    };
+  }
+  async verifyBVN(nINDto: BVNDto) {
+    const { userId, BVN } = nINDto;
+    const findUser = await this.usersRepository.findUser(userId);
+    if (!findUser) {
+      throw new NotFoundException('User is not found');
+    }
+
+    const userNin = await this.verificationService.verifyBVN(BVN);
+
+    await this.usersRepository.updateUserId(findUser.id, {
+      NIN: nINDto.BVN,
     });
 
     const { password, ...user } = findUser;
