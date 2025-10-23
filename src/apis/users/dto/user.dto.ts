@@ -1,3 +1,5 @@
+import { AddressI } from "../interfaces/users.interfaces";
+
 export class UserDto {
   email: string;
   firstName?: string;
@@ -32,10 +34,14 @@ export class BVNDto {
   userId: string;
 }
 
-export class ProfileSetup {
+export class ProfileSetupDto {
   readonly firstName: string;
   readonly lastName: string;
   readonly phoneNumber: string;
-  readonly dateOfBirth: string;
+  readonly address: object;
+  readonly dateOfBirth: Date;
   readonly nextOfKinName: string;
+  readonly sex: string;
+    userId: string;
+
 }

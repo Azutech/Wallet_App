@@ -13,6 +13,7 @@ import {
   CodeDto,
   LoginDto,
   NINDto,
+  ProfileSetupDto,
   ResetPasswordDto,
   UserDto,
 } from './dto/user.dto';
@@ -27,7 +28,7 @@ import { Wallet } from '../wallets/entity/wallet.entity';
 import { TokenRepository } from './repository/token.repository';
 import { generateRandomNumbers } from './enums/random.enum';
 import { trimObjectStrings } from 'src/common/utils/trim-object.util';
-import { Status } from './enums/enums';
+import { Sex, Status } from './enums/enums';
 import { VerificationService } from '../verification/verification.service';
 import { CurrencyEnum, WalletTypeEnum } from '../wallets/enum/enum';
 
@@ -384,4 +385,35 @@ export class UsersService {
       newToken,
     };
   }
+
+async userProfile(profileDto: ProfileSetupDto) {
+  const { userId, ...profileData } = profileDto;
+
+  const user = await this.usersRepository.findUser(userId);
+
+  if (!user) {
+    throw new NotFoundException('User not found');
+  }
+
+  // Update user record - cast to proper type
+  // await this.usersRepository.update(userId, profileData as any);
+  
+  // Or better, be explicit about the update
+  await this.usersRepository.update(userId, {
+    ...profileData,
+    sex: profileData.sex as Sex, // Cast to your Sex enum type
+  });
+
+  // Fetch updated user
+  const updatedUser = await this.usersRepository.findUser(userId);
+
+  // Exclude password from response
+  const { password, ...safeUser } = updatedUser;
+
+  return {
+    message: 'User profile updated successfully ✅',
+    user: safeUser,
+  };
+}
+
 }

@@ -36,7 +36,6 @@ export class SecurityQuestionsService {
 
   async verifySecurityAnswer(
     userId: string,
-    questionId: string,
     answer: string,
   ) {
     const record = await this.questionRepository.findQuestion(userId);
