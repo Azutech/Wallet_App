@@ -17,6 +17,7 @@ import {
   CodeDto,
   LoginDto,
   NINDto,
+  ProfileSetupDto,
   ResetPasswordDto,
   UserDto,
 } from './dto/user.dto';
@@ -82,6 +83,20 @@ export class UsersController {
   ) {
     nINDto.userId = req.user.userId;
     const result = await this.usersService.verifyNIN(nINDto);
+    return res
+      .status(HttpStatus.CREATED)
+      .json({ message: 'Password  Updated', result });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('userProfile')
+  async userProfile(
+    @Req() req: any,
+    @Res() res: Response,
+    @Body() profileSetupDto: ProfileSetupDto,
+  ) {
+    profileSetupDto.userId = req.user.userId;
+    const result = await this.usersService.userProfile(profileSetupDto);
     return res
       .status(HttpStatus.CREATED)
       .json({ message: 'Password  Updated', result });

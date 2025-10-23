@@ -11,12 +11,13 @@ import { TokenRepository } from './repository/token.repository';
 import { Token } from './entity/token.entity';
 import { VerificationService } from '../verification/verification.service';
 import { HttpModule } from '@nestjs/axios';
+import { Notification } from '../notification/entity/notification.entity';
 
 @Module({
   imports: [
     CustomJwtModule,
     HttpModule,
-    TypeOrmModule.forFeature([User, Wallet, Token]),
+    TypeOrmModule.forFeature([User, Wallet, Token, Notification]),
   ],
   controllers: [UsersController],
   providers: [

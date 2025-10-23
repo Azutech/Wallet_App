@@ -9,6 +9,9 @@ import { Wallet } from '../../wallets/entity/wallet.entity';
 import { Token } from './token.entity';
 import { Payment } from '../../payments/entity/payment.entity';
 import { Sex, Status } from '../enums/enums';
+import { AddressI } from '../interfaces/users.interfaces';
+import { Notification } from 'src/apis/notification/entity/notification.entity';
+import { SecurityQuestions } from 'src/apis/security-questions/entity/question.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -45,8 +48,8 @@ export class User {
   @Column({ nullable: true, default: '' })
   nextOfKinName?: string;
 
-  @Column({ nullable: true, default: '', type: 'varchar' })
-  address?: string;
+  @Column({ type: 'jsonb', nullable: true })
+  address?: AddressI;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
@@ -79,4 +82,10 @@ export class User {
 
   @OneToMany(() => Token, (t) => t.user)
   tokens: Token[];
+
+  @OneToMany(() => Token, (t) => t.user)
+  notifications: Notification[];
+
+  @OneToMany(() => Token, (t) => t.user)
+  securityQuestions: SecurityQuestions[];
 }
