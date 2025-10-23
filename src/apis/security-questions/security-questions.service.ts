@@ -34,10 +34,7 @@ export class SecurityQuestionsService {
     return securityQuestion;
   }
 
-  async verifySecurityAnswer(
-    userId: string,
-    answer: string,
-  ) {
+  async verifySecurityAnswer(userId: string, answer: string) {
     const record = await this.questionRepository.findQuestion(userId);
     if (!record) throw new NotFoundException('Security question not found');
 

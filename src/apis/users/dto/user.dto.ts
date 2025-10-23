@@ -1,4 +1,4 @@
-import { AddressI } from "../interfaces/users.interfaces";
+import { AddressI } from '../interfaces/users.interfaces';
 
 export class UserDto {
   email: string;
@@ -42,6 +42,5 @@ export class ProfileSetupDto {
   readonly dateOfBirth: Date;
   readonly nextOfKinName: string;
   readonly sex: string;
-    userId: string;
-
+  userId: string;
 }
