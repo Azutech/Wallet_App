@@ -48,9 +48,6 @@ export class User {
   @Column({ nullable: true, default: '' })
   nextOfKinName?: string;
 
-  @Column({ nullable: true, default: '' })
-  IRS?: string;
-
   @Column({ type: 'jsonb', nullable: true })
   address?: AddressI;
 

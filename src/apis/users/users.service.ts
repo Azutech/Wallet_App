@@ -21,7 +21,6 @@ import { hashSync, genSaltSync, compareSync } from 'bcrypt';
 import { DataSource } from 'typeorm';
 import { WalletsRepository } from '../wallets/repository/wallet.repository';
 import { validatePassword } from './enums/passwordValidator.enum';
-// import { AppResponse } from 'src/common/app.response';
 import { JwtService } from 'src/guards/jwt/jwt.service';
 import { User } from './entity/user.entity';
 import { Wallet } from '../wallets/entity/wallet.entity';

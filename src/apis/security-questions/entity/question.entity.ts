@@ -13,7 +13,9 @@ export class SecurityQuestions {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => User, (user) => user.securityQuestions, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.securityQuestions, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'userId' })
   user: User;
 
