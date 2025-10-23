@@ -8,7 +8,7 @@ import {
 import { Wallet } from '../../wallets/entity/wallet.entity';
 import { Token } from './token.entity';
 import { Payment } from '../../payments/entity/payment.entity';
-import { Status } from '../enums/enums';
+import { Sex, Status } from '../enums/enums';
 
 @Entity({ name: 'users' })
 export class User {
@@ -62,7 +62,14 @@ export class User {
     enum: Status,
     default: Status.PENDING,
   })
-  status: string;
+  status: Status;
+
+  @Column({
+    type: 'enum',
+    enum: Sex,
+    nullable: true,
+  })
+  sex: Sex;
 
   @OneToMany(() => Wallet, (w) => w.user)
   wallets: Wallet[];

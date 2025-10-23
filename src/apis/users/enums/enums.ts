@@ -4,3 +4,8 @@ export enum Status {
   SUSPENDED = 'suspended',
   DEACTIVATED = 'deactivated',
 }
+
+export enum Sex {
+  MALE = 'male',
+  FEMALE = 'female',
+}

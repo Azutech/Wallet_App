@@ -34,7 +34,7 @@ export class Wallet {
     enum: WalletTypeEnum,
     default: WalletTypeEnum.FIAT,
   })
-  walletTypeEnum: WalletTypeEnum;
+  walletType: WalletTypeEnum;
 
   @Column({ nullable: true })
   network?: string; // for crypto e.g. 'ERC20', 'TRC20'
