@@ -31,3 +31,11 @@ export class BVNDto {
   readonly BVN: string;
   userId: string;
 }
+
+export class ProfileSetup {
+  readonly firstName: string;
+  readonly lastName: string;
+  readonly phoneNumber: string;
+  readonly dateOfBirth: string;
+  readonly nextOfKinName: string;
+}

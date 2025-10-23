@@ -11,6 +11,7 @@ import { PaymentsModule } from './apis/payments/payments.module';
 import { TransactionModule } from './apis/transactions/transaction.module';
 import { FlutterwaveModule } from './flutterwave/flutterwave.module';
 import { VerificationModule } from './apis/verification/verification.module';
+import { SecurityQuestionsModule } from './apis/security-questions/security-questions.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { VerificationModule } from './apis/verification/verification.module';
     TransactionModule,
     FlutterwaveModule,
     VerificationModule,
+    SecurityQuestionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
