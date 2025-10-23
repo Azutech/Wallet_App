@@ -85,17 +85,17 @@ export class UsersService {
       const walletData = [
         {
           userId: user.id,
-          type: WalletTypeEnum.FIAT,
+          walletType: WalletTypeEnum.FIAT,
           currency: CurrencyEnum.NGN,
         },
         {
           userId: user.id,
-          type: WalletTypeEnum.FIAT,
+          walletType: WalletTypeEnum.FIAT,
           currency: CurrencyEnum.USD,
         },
         {
           userId: user.id,
-          type: WalletTypeEnum.CRYPTO,
+          walletType: WalletTypeEnum.CRYPTO,
           currency: CurrencyEnum.USDT,
           network: 'TRC20',
         },
