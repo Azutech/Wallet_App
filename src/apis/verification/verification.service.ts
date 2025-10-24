@@ -44,7 +44,7 @@ export class VerificationService {
   }
   async verifyBVN(bvn: string): Promise<any> {
     try {
-      const url = `${this.baseUrl}/v2/api/identity/ng/nin`;
+      const url = `${this.baseUrl}/v2/api/identity/ng/bvn`;
 
       const headers = {
         token: this.apiKey, // 👈 Correct header per documentation

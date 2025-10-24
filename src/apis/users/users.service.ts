@@ -325,6 +325,11 @@ export class UsersService {
       throw new NotFoundException('User is not found');
     }
 
+
+    if (findUser.NIN) {
+      throw new ConflictException('NIN for this user already exists')
+    }
+
     const userNin = await this.verificationService.verifyNIN(NIN);
 
     await this.usersRepository.updateUserId(findUser.id, {
@@ -343,6 +348,11 @@ export class UsersService {
     const findUser = await this.usersRepository.findUser(userId);
     if (!findUser) {
       throw new NotFoundException('User is not found');
+    }
+
+
+    if (findUser.BVN) {
+      throw new ConflictException('BVN for this user already exists')
     }
 
     const userNin = await this.verificationService.verifyBVN(BVN);
