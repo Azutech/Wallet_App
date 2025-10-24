@@ -31,6 +31,7 @@ import { trimObjectStrings } from 'src/common/utils/trim-object.util';
 import { Sex, Status } from './enums/enums';
 import { VerificationService } from '../verification/verification.service';
 import { CurrencyEnum, WalletTypeEnum } from '../wallets/enum/enum';
+import { FlutterwaveService } from 'src/flutterwave/flutterwave.service';
 
 @Injectable()
 export class UsersService {
@@ -40,6 +41,7 @@ export class UsersService {
     private readonly tokenRepository: TokenRepository,
     readonly jwtService: JwtService,
     readonly verificationService: VerificationService,
+    readonly flutterwaveService: FlutterwaveService,
 
     private readonly dataSource: DataSource,
   ) {}
@@ -354,6 +356,17 @@ export class UsersService {
     }
 
     await this.verificationService.verifyBVN(BVN);
+
+    const payload = {
+      email: `${findUser.email}`,
+      firstName: `${findUser.firstName}`,
+      lastName: findUser.lastName,
+      phone: findUser.phoneNumber,
+      bvn: findUser.phoneNumber,
+    }
+
+
+    // await this.flutterwaveService.createVirtualAccount(payload)
 
     const verifyUser = await this.usersRepository.updateUserId(findUser.id, {
       BVN: nINDto.BVN,

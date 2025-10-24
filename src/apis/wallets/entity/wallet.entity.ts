@@ -45,6 +45,15 @@ export class Wallet {
   @Column({ nullable: true })
   providerWalletId?: string; // e.g. ID from payment gateway or crypto custodian
 
+  @Column({ nullable: true })
+  accountNumber?: string; // e.g. ID from payment gateway or crypto custodian
+
+  @Column({ nullable: true })
+  bankName?: string; // e.g. ID from payment gateway or crypto custodian
+
+  @Column({ nullable: true })
+  accountName?: string; // e.g. ID from payment gateway or crypto custodian
+
   @Column({ type: 'decimal', precision: 18, scale: 8, default: 0 })
   balance: number; // keep as bigint in entity to avoid JS number issues
 
