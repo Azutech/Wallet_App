@@ -41,7 +41,6 @@ export class FlutterwaveService {
     firstName: string;
     lastName: string;
     phoneNumber: string;
-
   }) {
     try {
       const payload = {
@@ -50,8 +49,7 @@ export class FlutterwaveService {
         bvn: '12345678901', // Optional
         tx_ref: `VA-${Date.now()}`,
         narration: `${user.firstName} ${user.lastName}`,
-        bank_code: '058'
-
+        bank_code: '058',
       };
 
       const { data } = await this.httpService.axiosRef.post(

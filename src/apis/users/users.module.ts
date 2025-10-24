@@ -27,7 +27,7 @@ import { FlutterwaveService } from 'src/flutterwave/flutterwave.service';
     WalletsRepository,
     TokenRepository,
     VerificationService,
-    FlutterwaveService
+    FlutterwaveService,
   ],
 })
 export class UsersModule {}

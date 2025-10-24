@@ -363,8 +363,7 @@ export class UsersService {
       lastName: findUser.lastName,
       phone: findUser.phoneNumber,
       bvn: findUser.phoneNumber,
-    }
-
+    };
 
     // await this.flutterwaveService.createVirtualAccount(payload)
 
