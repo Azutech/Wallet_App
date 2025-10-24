@@ -325,18 +325,17 @@ export class UsersService {
       throw new NotFoundException('User is not found');
     }
 
-
     if (findUser.NIN) {
-      throw new ConflictException('NIN for this user already exists')
+      throw new ConflictException('NIN for this user already exists');
     }
 
-    const userNin = await this.verificationService.verifyNIN(NIN);
+    await this.verificationService.verifyNIN(NIN);
 
-    await this.usersRepository.updateUserId(findUser.id, {
+    const verifyUser = await this.usersRepository.updateUserId(findUser.id, {
       NIN: nINDto.NIN,
     });
 
-    const { password, ...user } = findUser;
+    const { password, ...user } = verifyUser;
 
     return {
       message: `NIN verified successfully`,
@@ -350,18 +349,17 @@ export class UsersService {
       throw new NotFoundException('User is not found');
     }
 
-
     if (findUser.BVN) {
-      throw new ConflictException('BVN for this user already exists')
+      throw new ConflictException('BVN for this user already exists');
     }
 
-    const userNin = await this.verificationService.verifyBVN(BVN);
+    await this.verificationService.verifyBVN(BVN);
 
-    await this.usersRepository.updateUserId(findUser.id, {
-      NIN: nINDto.BVN,
+    const verifyUser = await this.usersRepository.updateUserId(findUser.id, {
+      BVN: nINDto.BVN,
     });
 
-    const { password, ...user } = findUser;
+    const { password, ...user } = verifyUser;
 
     return {
       message: `NIN verified successfully`,
