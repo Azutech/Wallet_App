@@ -85,11 +85,17 @@ export class UsersService {
 
       await usersRepo.save(user);
 
+      const virtualAcc =
+        await this.flutterwaveService.createVirtualAccount(user);
+
       const walletData = [
         {
           userId: user.id,
           walletType: WalletTypeEnum.FIAT,
           currency: CurrencyEnum.NGN,
+          providerWalletId: virtualAcc.flw_ref,
+          accountNumber: virtualAcc.account_number,
+          bankName: virtualAcc.bank_name,
         },
         {
           userId: user.id,
@@ -344,6 +350,7 @@ export class UsersService {
       user,
     };
   }
+
   async verifyBVN(nINDto: BVNDto) {
     const { userId, BVN } = nINDto;
     const findUser = await this.usersRepository.findUser(userId);
@@ -364,8 +371,6 @@ export class UsersService {
       phone: findUser.phoneNumber,
       bvn: findUser.phoneNumber,
     };
-
-    // await this.flutterwaveService.createVirtualAccount(payload)
 
     const verifyUser = await this.usersRepository.updateUserId(findUser.id, {
       BVN: nINDto.BVN,
@@ -422,6 +427,10 @@ export class UsersService {
     await this.usersRepository.update(userId, {
       ...profileData,
       sex: profileData.sex as Sex, // Cast to your Sex enum type
+    });
+
+    await this.walletsRepository.updateWallet(user.id, {
+      accountName: `XlerPay/${user.firstName}${user.lastName}`,
     });
 
     // Fetch updated user
