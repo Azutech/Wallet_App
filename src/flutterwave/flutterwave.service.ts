@@ -57,18 +57,14 @@ export class FlutterwaveService {
 
       const url = `${this.baseUrl}/virtual-account-numbers`;
 
-      console.log(url);
       const headers = {
         Authorization: `${this.newsecretKey}`,
         'Content-Type': 'application/json',
       };
 
-      console.log(this.newsecretKey);
       const response = await firstValueFrom(
         this.httpService.post(url, payload, { headers }),
       );
-
-      console.log(response);
 
       return response.data;
     } catch (error) {

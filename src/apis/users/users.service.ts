@@ -85,8 +85,9 @@ export class UsersService {
 
       await usersRepo.save(user);
 
-      const virtualAcc =
+      const { data: virtualAcc } =
         await this.flutterwaveService.createVirtualAccount(user);
+
 
       const walletData = [
         {
