@@ -51,8 +51,11 @@ export class Wallet {
   @Column({ type: 'varchar', nullable: true })
   bankName?: string;
 
-  @Column({ type: 'bigint', nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   accountName?: string;
+
+  @Column({ type: 'bigint', nullable: true })
+  routingNumber?: string;
 
   @Column({ type: 'decimal', precision: 18, scale: 8, default: 0 })
   balance: number;
