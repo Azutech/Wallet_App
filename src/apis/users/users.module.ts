@@ -13,6 +13,7 @@ import { VerificationService } from '../verification/verification.service';
 import { HttpModule } from '@nestjs/axios';
 import { Notification } from '../notification/entity/notification.entity';
 import { FlutterwaveService } from 'src/flutterwave/flutterwave.service';
+import { UnitService } from 'src/unit/unit.service';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { FlutterwaveService } from 'src/flutterwave/flutterwave.service';
     TokenRepository,
     VerificationService,
     FlutterwaveService,
+    UnitService
   ],
 })
 export class UsersModule {}

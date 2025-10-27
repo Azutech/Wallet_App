@@ -32,6 +32,7 @@ import { Sex, Status } from './enums/enums';
 import { VerificationService } from '../verification/verification.service';
 import { CurrencyEnum, WalletTypeEnum } from '../wallets/enum/enum';
 import { FlutterwaveService } from 'src/flutterwave/flutterwave.service';
+import { UnitService } from 'src/unit/unit.service';
 
 @Injectable()
 export class UsersService {
@@ -42,6 +43,7 @@ export class UsersService {
     readonly jwtService: JwtService,
     readonly verificationService: VerificationService,
     readonly flutterwaveService: FlutterwaveService,
+    readonly unitService: UnitService,
 
     private readonly dataSource: DataSource,
   ) {}
@@ -87,7 +89,11 @@ export class UsersService {
 
       const { data: virtualAcc } =
         await this.flutterwaveService.createVirtualAccount(user);
+      const customerId = await this.unitService.createCustomer(user);
+      const accountResp =
+        await this.unitService.createDepositAccount(customerId);
 
+      const acc = accountResp.data.attributes;
 
       const walletData = [
         {
@@ -102,6 +108,10 @@ export class UsersService {
           userId: user.id,
           walletType: WalletTypeEnum.FIAT,
           currency: CurrencyEnum.USD,
+          providerWalletId: accountResp.data.id,
+          accountNumber: acc.accountNumber,
+          routingNumber: acc.routingNumber,
+          bankName: 'Unit Bank Partner',
         },
         {
           userId: user.id,
