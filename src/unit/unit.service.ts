@@ -16,7 +16,7 @@ export class UnitService {
     readonly configService: ConfigService,
     readonly httpService: HttpService,
   ) {
-    this.baseUrl = this.configService.get<string>('UNIT_SERVER_URL');
+    this.baseUrl = this.configService.get<string>('UNIT_API_URL');
     this.apiKey = this.configService.get<string>('UNIT_SECRET_KEY');
   }
 
@@ -32,60 +32,93 @@ export class UnitService {
       );
       return response.data;
     } catch (err) {
-      const msg = err.response?.data || err.message;
+      console.error('❌ Unit API Request Failed:');
+      console.error('➡️ URL:', `${this.baseUrl}${path}`);
+      console.error('➡️ Headers:', {
+        Authorization: `Bearer ${this.apiKey?.slice(0, 8)}...`,
+      });
+      console.error('➡️ Body:', JSON.stringify(body, null, 2));
+      console.error(
+        '➡️ Response:',
+        JSON.stringify(err.response?.data, null, 2),
+      );
+      console.error('➡️ Status:', err.response?.status);
+
+      const msg = JSON.stringify(err.response?.data || err.message);
       throw new HttpException(
         `Unit API Error: ${msg}`,
         err.response?.status || 500,
       );
+      //   const msg = err.response?.data || err.message;
+      //   throw new HttpException(
+      //     `Unit API Error: ${msg}`,
+      //     err.response?.status || 500,
+      //   );
     }
   }
 
-  async createCustomer(user: any): Promise<string> {
-    const payload = {
-      data: {
-        type: 'customer',
-        attributes: {
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
+async createCustomer(user: any): Promise<string> {
+  const payload = {
+    data: {
+      type: 'individualCustomer', // ✅ required exact type
+      attributes: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        ssn: user.ssn ?? '123-45-6789', // temporary placeholder for sandbox
+        dateOfBirth: user.dateOfBirth ?? '1990-01-01',
+        address: {
+          street: user.street ?? '123 Main Street',
+          city: user.city ?? 'New York',
+          state: user.state ?? 'NY',
+          postalCode: user.postalCode ?? '10001',
+          country: 'US',
         },
       },
-    };
+    },
+  };
 
-    const resp = await this.unitPost<UnitCustomerResponse>(
-      '/customers',
-      payload,
-    );
-    if (!resp?.data?.id) {
-      throw new BadRequestException('Failed to create Unit customer');
-    }
-    return resp.data.id;
+  const resp = await this.unitPost<UnitCustomerResponse>('/customers', payload);
+
+  if (!resp?.data?.id) {
+    throw new BadRequestException('Failed to create Unit customer');
   }
+  return resp.data.id;
+}
+
 
   /** 2️⃣ Create a Deposit Account (Virtual Account) */
-  async createDepositAccount(
-    customerId: string,
-  ): Promise<UnitDepositAccountResponse> {
-    const payload = {
-      data: {
-        type: 'depositAccount',
-        attributes: {
-          depositProduct: 'checking', // or your product type configured in Unit dashboard
-          currency: 'USD',
-        },
-        relationships: {
-          customer: { data: { type: 'customer', id: customerId } },
+/** 2️⃣ Create a Deposit Account (Virtual Account) */
+async createDepositAccount(customerId: string): Promise<UnitDepositAccountResponse> {
+  const payload = {
+    data: {
+      type: 'depositAccount', // ✅ required literal type
+      attributes: {
+        depositProduct: 'checking', // ✅ must match a valid Unit product slug
+        nickname: 'Primary Checking Account', // optional, for clarity
+        currency: 'USD',
+      },
+      relationships: {
+        customer: {
+          data: {
+            type: 'individualCustomer', // ✅ must match type used in customer creation
+            id: customerId,
+          },
         },
       },
-    };
+    },
+  };
 
-    const resp = await this.unitPost<UnitDepositAccountResponse>(
-      '/deposit-accounts',
-      payload,
-    );
-    if (!resp?.data?.attributes?.accountNumber) {
-      throw new BadRequestException('Failed to create Unit deposit account');
-    }
-    return resp;
+  const resp = await this.unitPost<UnitDepositAccountResponse>(
+    '/deposit-accounts',
+    payload,
+  );
+
+  if (!resp?.data?.attributes?.accountNumber) {
+    throw new BadRequestException('Failed to create Unit deposit account');
   }
+
+  return resp;
+}
+
 }

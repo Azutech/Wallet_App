@@ -29,7 +29,7 @@ import { UnitService } from 'src/unit/unit.service';
     TokenRepository,
     VerificationService,
     FlutterwaveService,
-    UnitService
+    UnitService,
   ],
 })
 export class UsersModule {}

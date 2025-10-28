@@ -87,23 +87,25 @@ export class UsersService {
 
       await usersRepo.save(user);
 
-      const { data: virtualAcc } =
-        await this.flutterwaveService.createVirtualAccount(user);
+      // const { data: virtualAcc } =
+      //   await this.flutterwaveService.createVirtualAccount(user);
       const customerId = await this.unitService.createCustomer(user);
+
+      console.log(customerId);
       const accountResp =
         await this.unitService.createDepositAccount(customerId);
 
       const acc = accountResp.data.attributes;
 
       const walletData = [
-        {
-          userId: user.id,
-          walletType: WalletTypeEnum.FIAT,
-          currency: CurrencyEnum.NGN,
-          providerWalletId: virtualAcc.flw_ref,
-          accountNumber: virtualAcc.account_number,
-          bankName: virtualAcc.bank_name,
-        },
+        // {
+        //   userId: user.id,
+        //   walletType: WalletTypeEnum.FIAT,
+        //   currency: CurrencyEnum.NGN,
+        //   providerWalletId: virtualAcc.flw_ref,
+        //   accountNumber: virtualAcc.account_number,
+        //   bankName: virtualAcc.bank_name,
+        // },
         {
           userId: user.id,
           walletType: WalletTypeEnum.FIAT,
