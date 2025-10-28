@@ -49,114 +49,47 @@ export class UsersService {
   ) {}
 
   async createUser(dto: UserDto) {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    const sanitizedDto = trimObjectStrings(dto);
 
-    try {
-      const sanitizedDto = trimObjectStrings(dto);
+    let { password } = sanitizedDto;
 
-      let { password } = sanitizedDto;
-      const usersRepo = queryRunner.manager.getRepository(User);
-      const walletsRepo = queryRunner.manager.getRepository(Wallet);
-
-      // check for existing user
-      const existingUser = await usersRepo.findOne({
-        where: { email: dto.email },
-      });
-      if (existingUser) {
-        throw new ConflictException('User with that email already exists');
-      }
-
-      const checkPassword = validatePassword(password);
-
-      if (!checkPassword) {
-        throw new BadRequestException(
-          'Password must be atleast 8 characters long and contain a number, a special character and an uppercase letter',
-        );
-      }
-
-      password = hashSync(password, genSaltSync());
-
-      // create user
-      const user = await usersRepo.create({
-        ...dto,
-        password,
-        avatar: `https://ui-avatars.com/api/?name=${dto.firstName}+${dto.lastName}&background=f5f5f5`,
-      });
-
-      await usersRepo.save(user);
-
-      // const { data: virtualAcc } =
-      //   await this.flutterwaveService.createVirtualAccount(user);
-      const customerId = await this.unitService.createCustomer(user);
-
-      console.log(customerId);
-      const accountResp =
-        await this.unitService.createDepositAccount(customerId);
-
-      const acc = accountResp.data.attributes;
-
-      const walletData = [
-        // {
-        //   userId: user.id,
-        //   walletType: WalletTypeEnum.FIAT,
-        //   currency: CurrencyEnum.NGN,
-        //   providerWalletId: virtualAcc.flw_ref,
-        //   accountNumber: virtualAcc.account_number,
-        //   bankName: virtualAcc.bank_name,
-        // },
-        {
-          userId: user.id,
-          walletType: WalletTypeEnum.FIAT,
-          currency: CurrencyEnum.USD,
-          providerWalletId: accountResp.data.id,
-          accountNumber: acc.accountNumber,
-          routingNumber: acc.routingNumber,
-          bankName: 'Unit Bank Partner',
-        },
-        {
-          userId: user.id,
-          walletType: WalletTypeEnum.CRYPTO,
-          currency: CurrencyEnum.USDT,
-          network: 'TRC20',
-        },
-      ];
-
-      const wallets = await walletsRepo.save(walletData);
-      user.wallets = wallets;
-
-      // assign wallet reference before commit
-
-      const authTokenParam = {
-        userId: user?.id,
-        // role: user?.role,
-      };
-      const final = {
-        auth: this.jwtService.createEncryptedToken(authTokenParam),
-        message: 'sign up successful \u2705',
-      };
-
-      await queryRunner.commitTransaction();
-
-      try {
-        await this.sendMailToken(user.email);
-      } catch (emailError) {
-        // Log the error but don't throw it
-        console.error('Failed to send verification email:', emailError);
-        // Optionally: Queue the email for retry or log to monitoring service
-      }
-
-      return final;
-    } catch (err) {
-      if (queryRunner.isTransactionActive) {
-        await queryRunner.rollbackTransaction();
-      }
-      err.location = `UsersService.${this.createUser.name} method`;
-      throw err;
-    } finally {
-      await queryRunner.release();
+    // check for existing user
+    const existingUser = await this.usersRepository.findOne({
+      where: { email: dto.email },
+    });
+    if (existingUser) {
+      throw new ConflictException('User with that email already exists');
     }
+
+    const checkPassword = validatePassword(password);
+
+    if (!checkPassword) {
+      throw new BadRequestException(
+        'Password must be atleast 8 characters long and contain a number, a special character and an uppercase letter',
+      );
+    }
+
+    password = hashSync(password, genSaltSync());
+
+    // create user
+    const user = await this.usersRepository.create({
+      ...dto,
+      password,
+      avatar: `https://ui-avatars.com/api/?name=${dto.firstName}+${dto.lastName}&background=f5f5f5`,
+    });
+
+    await this.sendMailToken(user.email);
+
+    const authTokenParam = {
+      userId: user?.id,
+      // role: user?.role,
+    };
+    const final = {
+      auth: this.jwtService.createEncryptedToken(authTokenParam),
+      message: 'sign up successful \u2705',
+    };
+
+    return final;
   }
 
   async login(loginDto: LoginDto) {
@@ -375,7 +308,7 @@ export class UsersService {
       throw new ConflictException('BVN for this user already exists');
     }
 
-    await this.verificationService.verifyBVN(BVN);
+    // await this.verificationService.verifyBVN(BVN);
 
     const payload = {
       email: `${findUser.email}`,
@@ -388,6 +321,43 @@ export class UsersService {
     const verifyUser = await this.usersRepository.updateUserId(findUser.id, {
       BVN: nINDto.BVN,
     });
+
+    const { data: virtualAcc } =
+      await this.flutterwaveService.createVirtualAccount(findUser);
+    const customerId = await this.unitService.createCustomer(findUser);
+
+    console.log(customerId);
+    const accountResp = await this.unitService.createDepositAccount(customerId);
+
+    const acc = accountResp.data.attributes;
+
+    const walletData = [
+      // {
+      //   userId: user.id,
+      //   walletType: WalletTypeEnum.FIAT,
+      //   currency: CurrencyEnum.NGN,
+      //   providerWalletId: virtualAcc.flw_ref,
+      //   accountNumber: virtualAcc.account_number,
+      //   bankName: virtualAcc.bank_name,
+      // },
+      {
+        userId: findUser.id,
+        walletType: WalletTypeEnum.FIAT,
+        currency: CurrencyEnum.USD,
+        providerWalletId: accountResp.data.id,
+        accountNumber: acc.accountNumber,
+        routingNumber: acc.routingNumber,
+        bankName: 'Unit Bank Partner',
+      },
+      {
+        userId: findUser.id,
+        walletType: WalletTypeEnum.CRYPTO,
+        currency: CurrencyEnum.USDT,
+        network: 'TRC20',
+      },
+    ];
+
+    const wallets = await this.walletsRepository.save(walletData);
 
     const { password, ...user } = verifyUser;
 
