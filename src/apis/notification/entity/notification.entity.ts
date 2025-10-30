@@ -19,6 +19,9 @@ export class Notification {
   @Column()
   message: string;
 
+  @CreateDateColumn({ type: 'timestamp' })
+  createdAt: Date;
+
   @ManyToOne(() => User, (user) => user.payments, { onDelete: 'CASCADE' })
   user: User;
 }

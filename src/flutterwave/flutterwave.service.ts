@@ -1,17 +1,22 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { firstValueFrom } from 'rxjs';
 const Flutterwave = require('flutterwave-node-v3');
 
 @Injectable()
 export class FlutterwaveService {
   private flw: typeof Flutterwave;
+  private readonly baseUrl: string;
+  private readonly newsecretKey: string;
 
   constructor(
     readonly configService: ConfigService,
     readonly httpService: HttpService,
   ) {
     const publicKey = this.configService.get<string>('PUBLIC_KEY');
+    this.baseUrl = this.configService.get<string>('FLW_URL');
+    this.newsecretKey = this.configService.get<string>('SECRET_KEY');
     const secretKey = this.configService.get<string>('SECRET_KEY');
     this.flw = new Flutterwave(publicKey, secretKey);
   }
@@ -31,6 +36,40 @@ export class FlutterwaveService {
       return response;
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  async createVirtualAccount(user: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+  }) {
+    try {
+      const payload = {
+        email: user.email,
+        is_permanent: true,
+        bvn: '12345678901', // Optional
+        tx_ref: `VA-${Date.now()}`,
+        narration: `${user.firstName} ${user.lastName}`,
+        bank_code: '044',
+      };
+
+      const url = `${this.baseUrl}/virtual-account-numbers`;
+
+      const headers = {
+        Authorization: `${this.newsecretKey}`,
+        'Content-Type': 'application/json',
+      };
+
+      const response = await firstValueFrom(
+        this.httpService.post(url, payload, { headers }),
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error('❌ Virtual Account Error:', error.response?.data || error);
+      throw new BadRequestException('Failed to create virtual account');
     }
   }
 

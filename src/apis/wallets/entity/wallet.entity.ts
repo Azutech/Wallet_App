@@ -43,10 +43,22 @@ export class Wallet {
   address?: string; // for crypto wallet address
 
   @Column({ nullable: true })
-  providerWalletId?: string; // e.g. ID from payment gateway or crypto custodian
+  providerWalletId?: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  accountNumber?: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  bankName?: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  accountName?: string;
+
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  routingNumber?: string;
 
   @Column({ type: 'decimal', precision: 18, scale: 8, default: 0 })
-  balance: number; // keep as bigint in entity to avoid JS number issues
+  balance: number;
 
   @CreateDateColumn()
   createdAt: Date;

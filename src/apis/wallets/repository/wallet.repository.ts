@@ -27,4 +27,12 @@ export class WalletsRepository extends Repository<Wallet> {
       where: { userId: userId },
     });
   }
+
+  async updateWallet(
+    userId: string,
+    data: Partial<Wallet>,
+  ): Promise<Wallet | null> {
+    await this.update({ userId }, data);
+    return await this.findOne({ where: { userId } });
+  }
 }
