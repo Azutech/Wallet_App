@@ -47,6 +47,9 @@ export class SyncterService {
     }
   }
 
+  /**
+   * Create a person in Synctera
+   */
   async createCustomer(user: any): Promise<any> {
     const payload = {
       ban_status: 'ALLOWED',
@@ -55,21 +58,18 @@ export class SyncterService {
       first_name: user.firstName || 'John',
       last_name: user.lastName || 'Doe',
       middle_name: user.middleName || '',
-      chosen_name: user.chosenName || user.firstName || 'John',
-      email: user.email,
-      phone_number: user.phoneNumber || '+15551234567',
+      email: `test-${Date.now()}@example.com `,
+      phone_number: '+15551234567',
       dob: '1990-01-01',
-      ssn: user.ssn || '123-45-6789',
-
+      ssn: user.ssn || '111-11-1111', // Test SSN for sandbox
+      
       legal_address: {
         address_line_1: user.street || '123 Main Street',
         address_line_2: user.addressLine2 || '',
         city: user.city || 'New York',
         state: user.state || 'NY',
         postal_code: user.postalCode || '10001',
-        country_code: user.country || 'US',
-        nickname: 'Home',
-        is_registered_agent: true,
+        country_code: 'US',
       },
 
       shipping_address: {
@@ -78,18 +78,8 @@ export class SyncterService {
         city: user.city || 'New York',
         state: user.state || 'NY',
         postal_code: user.postalCode || '10001',
-        country_code: user.country || 'US',
-        nickname: 'Home',
-        is_registered_agent: true,
+        country_code: 'US',
       },
-
-      personal_ids: [
-        {
-          id_type: 'SSN',
-          identifier: user.ssn || '123-45-6789',
-          country_code: 'US',
-        },
-      ],
     };
 
     try {
@@ -102,13 +92,12 @@ export class SyncterService {
         }),
       );
 
-      return response.data; // returns the full Synctera Person object (with `id`)
+      console.log('✅ Person created:', response.data.id);
+      return response.data;
     } catch (err) {
-      console.error('❌ Synctera API Request Failed:');
-      console.error('➡️ URL:', `${this.baseUrl}/persons`);
+      console.error('❌ Synctera createCustomer Failed:');
       console.error('➡️ Body:', JSON.stringify(payload, null, 2));
-      console.error('➡️ Response:', err.response?.data);
-      console.error('➡️ Status:', err.response?.status);
+      console.error('➡️ Response:', JSON.stringify(err.response?.data, null, 2));
 
       throw new HttpException(
         `Synctera API Error: ${JSON.stringify(err.response?.data || err.message)}`,
@@ -117,10 +106,138 @@ export class SyncterService {
     }
   }
 
-  async verifyPerson(personId: string, ipAddress: string) {
+
+  // 3️⃣ Get person info (to check verification_status)
+  async getPerson(personId: string) {
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get(`${this.baseUrl}/persons/${personId}`, {
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        }),
+      );
+
+      return response.data;
+    } catch (error) {
+      throw new HttpException(
+        `Synctera getPerson error: ${JSON.stringify(error.response?.data || error.message)}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+  async person() {
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get(`${this.baseUrl}/persons`, {
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        }),
+      );
+
+      return response.data;
+    } catch (error) {
+      throw new HttpException(
+        `Synctera getPerson error: ${JSON.stringify(error.response?.data || error.message)}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async createVerification(personId: string) {
+    const payload = {
+      person_id: personId,
+      result: 'ACCEPTED',
+      verification_type: 'IDENTITY',
+      verification_time: new Date().toISOString(),
+      vendor_info: {
+        vendor: 'SOURCE',
+        content_type: 'application/json',
+        json: {
+          reference_id: `kyc_${Date.now()}`,
+          verification_source: 'external',
+        },
+      },
+      details: [
+        {
+          category: 'CIP',
+          description: `Verified via external KYC`,
+          result: 'PASS',
+          score: 0.95,
+          vendor_code: 'BVN',
+          url: 'https://example.com/additional-info',
+        },
+      ],
+      metadata: {},
+    };
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(`${this.baseUrl}/verifications`, payload, {
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        }),
+      );
+
+      return response.data;
+    } catch (err) {
+      console.error('➡️ URL:', `${this.baseUrl}/persons`);
+      console.error('➡️ Body:', JSON.stringify(payload, null, 2));
+      console.error('➡️ Response:', err.response?.data);
+      throw new HttpException(
+        `Synctera verifyPerson error: ${JSON.stringify(err.response?.data || err.message)}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+
+    /**
+   * Create disclosure acknowledgment (required before verification)
+   */
+  async createDisclosure(personId: string) {
+    const body = {
+      person_id: personId,
+      type: 'KYC_DATA_COLLECTION',
+      version: '1.0',
+      event_type: 'ACKNOWLEDGED',
+      disclosure_date: new Date().toISOString(), // ✅ Use current date
+    };
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(`${this.baseUrl}/disclosures`, body, {
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        }),
+      );
+
+      console.log('✅ Disclosure created');
+      return response.data;
+    } catch (err) {
+      console.error('❌ Disclosure creation failed:', err.response?.data);
+      throw new HttpException(
+        `Synctera disclosure error: ${JSON.stringify(err.response?.data)}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+
+    /**
+   * Verify person identity
+   */
+async verifyPerson(personId: string, customerIp?: string) {
     const body = {
       customer_consent: true,
-      customer_ip_address: ipAddress,
+      customer_ip_address: customerIp || '140.151.183.216',
       person_id: personId,
     };
 
@@ -134,13 +251,78 @@ export class SyncterService {
         }),
       );
 
-      return response.data;
+      const verificationData = response.data;
+
+      // ✅ Extract identity verification details
+      const identityVerification = verificationData.verifications.find(
+        (v) => v.verification_type === 'IDENTITY',
+      );
+
+      const watchlistVerification = verificationData.verifications.find(
+        (v) => v.verification_type === 'WATCHLIST',
+      );
+
+      console.log('\n📊 Verification Results:');
+      console.log('Status:', verificationData.verification_status);
+      console.log('\n🔍 Identity Check:', identityVerification.result);
+      console.log('Details:', JSON.stringify(identityVerification.details, null, 2));
+      console.log('Vendor Info:', JSON.stringify(identityVerification.vendor_info, null, 2));
+      console.log('\n🚨 Watchlist Check:', watchlistVerification.result);
+
+      // Handle rejection
+      if (verificationData.verification_status === 'REJECTED') {
+        console.error('❌ Identity Verification REJECTED');
+        
+        // Find all failed checks
+        const failedChecks = identityVerification.details.filter(
+          d => d.result === 'FAIL'
+        );
+
+        console.error(`\n❌ Failed Checks (${failedChecks.length}):`);
+        failedChecks.forEach((check, index) => {
+          console.error(`  ${index + 1}. [${check.vendor_code}] ${check.description}`);
+        });
+
+        // Check if only alert list failed (R110)
+        const isOnlyAlertListFail = 
+          failedChecks.length === 1 && 
+          failedChecks[0].vendor_code === 'R110';
+
+        if (isOnlyAlertListFail) {
+          console.warn('⚠️ Only Alert List (R110) failed - may qualify for manual review');
+          console.warn('💡 Suggestion: Use a different email or request manual review');
+
+          throw new BadRequestException({
+            message: 'Email address flagged in fraud alert list',
+            status: 'ALERT_LIST_MATCH',
+            code: 'R110',
+            suggestion: 'Use a different email address or contact support for manual review',
+            details: failedChecks,
+            canRetry: true,
+          });
+        }
+
+        // Multiple failures - hard reject
+        throw new BadRequestException({
+          message: 'Identity verification failed',
+          status: verificationData.verification_status,
+          identityResult: identityVerification.result,
+          failedChecks,
+          details: identityVerification.details,
+          vendorInfo: identityVerification.vendor_info,
+        });
+      }
+
+      return verificationData;
     } catch (err) {
-      console.error('➡️ URL:', `${this.baseUrl}/persons`);
-      console.error('➡️ Body:', JSON.stringify(body, null, 2));
-      console.error('➡️ Response:', err.response?.data);
+      // If it's our custom BadRequestException, rethrow it
+      if (err instanceof BadRequestException) {
+        throw err;
+      }
+
+      console.error('❌ Verification request failed:', err.response?.data);
       throw new HttpException(
-        `Synctera verifyPerson error: ${JSON.stringify(err.response?.data || err.message)}`,
+        `Synctera verification error: ${JSON.stringify(err.response?.data || err.message)}`,
         HttpStatus.BAD_REQUEST,
       );
     }

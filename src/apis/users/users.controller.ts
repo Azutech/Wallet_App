@@ -116,6 +116,19 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Put('onboardCustomer')
+  async onboardCustomer(
+    @Req() req: any,
+    @Res() res: Response,
+  ) {
+    const userId = req.user.userId;
+    const result = await this.usersService.onboardCustomer(userId);
+    return res
+      .status(HttpStatus.CREATED)
+      .json({ message: 'Password  Updated', result });
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('me')
   async findOne(@Req() req: any, @Res() res: Response) {
     const userId = req.user.userId;

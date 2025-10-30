@@ -312,58 +312,100 @@ export class UsersService {
 
     // await this.verificationService.verifyBVN(BVN);
 
-    const verifyUser = await this.usersRepository.updateUserId(findUser.id, {
-      BVN: nINDto.BVN,
-    });
-
     // const { data: virtualAcc } =
     //   await this.flutterwaveService.createVirtualAccount(findUser);
-    // const program = await this.unitService.getProgramId();
-    // console.log(program)
-    // const organization = await this.unitService.getOrganization();
-    const syncteraCustomer = await this.unitService.createCustomer(findUser);
 
-    const accountResp = await this.unitService.createVirtualAccount(
-      syncteraCustomer.id as any,
+    const syncteraCustomer = await this.unitService.createCustomer(findUser);
+    console.log(syncteraCustomer, 'adams');
+
+    const addPerson = await this.unitService.getPerson(
+      // '2fcc8de5-c04b-464c-a223-e4b0052c0484',
+      syncteraCustomer.id,
+    );
+    console.log(addPerson, 'addPerson');
+    // const person = await this.unitService.person(
+    //   // syncteraCustomer.id
+    // );
+    // console.log(person, 'addPerson');
+
+    // disclosures
+
+    // const createsyncteraKYC = await this.unitService.disclosures(
+    //   addPerson.id as any,
+    // );
+    // console.log(createsyncteraKYC, 'KYC');
+
+    const syncteraKYC = await this.unitService.verifyPerson(
+      addPerson.id as any,
     );
 
-    // const acc = accountResp.data.attributes;
+    console.log(syncteraKYC, 'rtyu');
 
-    const walletData = [
-      // {
-      //   userId: findUser.id,
-      //   walletType: WalletTypeEnum.FIAT,
-      //   currency: CurrencyEnum.NGN,
-      //   providerWalletId: virtualAcc.flw_ref,
-      //   accountNumber: virtualAcc.account_number,
-      //   bankName: virtualAcc.bank_name,
-      // },
-      {
-        userId: findUser.id,
-        walletType: WalletTypeEnum.FIAT,
-        currency: CurrencyEnum.USD,
-        providerWalletId: accountResp.id,
-        accountNumber: accountResp.account_number,
-        routingNumber: accountResp.routing_number,
-        bankName: accountResp.bank_name || 'Synctera Partner Bank',
-      },
-      {
-        userId: findUser.id,
-        walletType: WalletTypeEnum.CRYPTO,
-        currency: CurrencyEnum.USDT,
-        network: 'TRC20',
-      },
-    ];
+    const accountResp = await this.unitService.createVirtualAccount(
+      addPerson.id as any,
+    );
 
-    const wallets = await this.walletsRepository.save(walletData);
+    const verifyUser = await this.usersRepository.updateUserId(findUser.id, {
+      BVN: nINDto.BVN,
+      bvn_verified: true,
+    });
 
     const { password, ...user } = verifyUser;
 
     return {
-      message: `NIN verified successfully`,
+      message: `BVN verified successfully`,
       user,
     };
   }
+
+
+   /**
+   * Complete onboarding flow
+   */
+  async onboardCustomer(userId: any) {
+    try {
+
+          const findUser = await this.usersRepository.findUser(userId);
+    if (!findUser) {
+      throw new NotFoundException('User is not found');
+    }
+      // Step 1: Create person
+      console.log('📝 Step 1: Creating person...');
+      const person = await this.unitService.createCustomer(findUser);
+
+      // Step 2: Create disclosure (required before verification)
+      console.log('\n📋 Step 2: Creating disclosure...');
+      await this.unitService.createDisclosure(person.id);
+
+      // Step 3: Verify person
+      console.log('\n🔐 Step 3: Verifying identity...');
+      const verification = await this.unitService.verifyPerson(person.id, userId.ipAddress);
+
+      if (verification.verification_status === 'ACCEPTED') {
+        console.log('✅ Verification successful!');
+        
+        return {
+          success: true,
+          personId: person.id,
+          verificationStatus: verification.verification_status,
+          message: 'Customer successfully onboarded and verified',
+        };
+      }
+
+      // Manual review needed
+      return {
+        success: false,
+        personId: person.id,
+        verificationStatus: verification.verification_status,
+        message: 'Verification requires manual review',
+      };
+
+    } catch (error) {
+      console.error('❌ Onboarding failed:', error);
+      throw error;
+    }
+  }
+
 
   async sendMailToken(email: string) {
     // check if user exists
@@ -423,3 +465,31 @@ export class UsersService {
     };
   }
 }
+
+// const walletData = [
+//   // {
+//   //   userId: findUser.id,
+//   //   walletType: WalletTypeEnum.FIAT,
+//   //   currency: CurrencyEnum.NGN,
+//   //   providerWalletId: virtualAcc.flw_ref,
+//   //   accountNumber: virtualAcc.account_number,
+//   //   bankName: virtualAcc.bank_name,
+//   // },
+//   {
+//     userId: findUser.id,
+//     walletType: WalletTypeEnum.FIAT,
+//     currency: CurrencyEnum.USD,
+//     providerWalletId: accountResp.id,
+//     accountNumber: accountResp.account_number,
+//     routingNumber: accountResp.routing_number,
+//     bankName: accountResp.bank_name || 'Synctera Partner Bank',
+//   },
+//   {
+//     userId: findUser.id,
+//     walletType: WalletTypeEnum.CRYPTO,
+//     currency: CurrencyEnum.USDT,
+//     network: 'TRC20',
+//   },
+// ];
+
+// const wallets = await this.walletsRepository.save(walletData);
