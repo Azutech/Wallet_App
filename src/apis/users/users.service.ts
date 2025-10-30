@@ -32,7 +32,7 @@ import { Sex, Status } from './enums/enums';
 import { VerificationService } from '../verification/verification.service';
 import { CurrencyEnum, WalletTypeEnum } from '../wallets/enum/enum';
 import { FlutterwaveService } from 'src/flutterwave/flutterwave.service';
-import { UnitService } from 'src/unit/unit.service';
+import { SyncterService } from 'src/unit/unit.service';
 
 @Injectable()
 export class UsersService {
@@ -43,7 +43,7 @@ export class UsersService {
     readonly jwtService: JwtService,
     readonly verificationService: VerificationService,
     readonly flutterwaveService: FlutterwaveService,
-    readonly unitService: UnitService,
+    readonly unitService: SyncterService,
 
     private readonly dataSource: DataSource,
   ) {}
@@ -78,7 +78,9 @@ export class UsersService {
       avatar: `https://ui-avatars.com/api/?name=${dto.firstName}+${dto.lastName}&background=f5f5f5`,
     });
 
-    await this.sendMailToken(user.email);
+    const newUser = await this.usersRepository.save(user);
+
+    await this.sendMailToken(newUser.email);
 
     const authTokenParam = {
       userId: user?.id,
@@ -304,36 +306,32 @@ export class UsersService {
       throw new NotFoundException('User is not found');
     }
 
-    if (findUser.BVN) {
-      throw new ConflictException('BVN for this user already exists');
-    }
+    // if (findUser.BVN) {
+    //   throw new ConflictException('BVN for this user already exists');
+    // }
 
     // await this.verificationService.verifyBVN(BVN);
-
-    const payload = {
-      email: `${findUser.email}`,
-      firstName: `${findUser.firstName}`,
-      lastName: findUser.lastName,
-      phone: findUser.phoneNumber,
-      bvn: findUser.phoneNumber,
-    };
 
     const verifyUser = await this.usersRepository.updateUserId(findUser.id, {
       BVN: nINDto.BVN,
     });
 
-    const { data: virtualAcc } =
-      await this.flutterwaveService.createVirtualAccount(findUser);
-    const customerId = await this.unitService.createCustomer(findUser);
+    // const { data: virtualAcc } =
+    //   await this.flutterwaveService.createVirtualAccount(findUser);
+    // const program = await this.unitService.getProgramId();
+    // console.log(program)
+    // const organization = await this.unitService.getOrganization();
+    const syncteraCustomer = await this.unitService.createCustomer(findUser);
 
-    console.log(customerId);
-    const accountResp = await this.unitService.createDepositAccount(customerId);
+    const accountResp = await this.unitService.createVirtualAccount(
+      syncteraCustomer.id as any,
+    );
 
-    const acc = accountResp.data.attributes;
+    // const acc = accountResp.data.attributes;
 
     const walletData = [
       // {
-      //   userId: user.id,
+      //   userId: findUser.id,
       //   walletType: WalletTypeEnum.FIAT,
       //   currency: CurrencyEnum.NGN,
       //   providerWalletId: virtualAcc.flw_ref,
@@ -344,10 +342,10 @@ export class UsersService {
         userId: findUser.id,
         walletType: WalletTypeEnum.FIAT,
         currency: CurrencyEnum.USD,
-        providerWalletId: accountResp.data.id,
-        accountNumber: acc.accountNumber,
-        routingNumber: acc.routingNumber,
-        bankName: 'Unit Bank Partner',
+        providerWalletId: accountResp.id,
+        accountNumber: accountResp.account_number,
+        routingNumber: accountResp.routing_number,
+        bankName: accountResp.bank_name || 'Synctera Partner Bank',
       },
       {
         userId: findUser.id,
@@ -403,18 +401,15 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    // Update user record - cast to proper type
-    // await this.usersRepository.update(userId, profileData as any);
-
     // Or better, be explicit about the update
     await this.usersRepository.update(userId, {
       ...profileData,
       sex: profileData.sex as Sex, // Cast to your Sex enum type
     });
 
-    await this.walletsRepository.updateWallet(user.id, {
-      accountName: `XlerPay/${user.firstName}${user.lastName}`,
-    });
+    // await this.walletsRepository.updateWallet(user.id, {
+    //   accountName: `XlerPay/${user.firstName}${user.lastName}`,
+    // });
 
     // Fetch updated user
     const updatedUser = await this.usersRepository.findUser(userId);

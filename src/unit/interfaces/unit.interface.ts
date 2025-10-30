@@ -1,26 +1,14 @@
-export interface UnitCustomerResponse {
-  data: {
-    id: string;
-    type: string;
-    attributes: {
-      firstName: string;
-      lastName: string;
-      email: string;
-      status: string;
-    };
-  };
+export interface SyncteraCustomer {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number?: string;
 }
 
-export interface UnitDepositAccountResponse {
-  data: {
-    id: string;
-    type: string;
-    attributes: {
-      accountNumber: string;
-      routingNumber: string;
-      balance: number;
-      currency: string;
-      status: string;
-    };
-  };
+export interface SyncteraAccount {
+  id: string;
+  account_number: string;
+  routing_number: string;
+  bank_name?: string;
 }
