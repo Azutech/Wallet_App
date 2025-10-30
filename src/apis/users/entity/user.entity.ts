@@ -36,11 +36,17 @@ export class User {
   @Column({ type: 'varchar', nullable: true })
   BVN: string;
 
+  @Column({ default: false })
+  bvn_verified: boolean;
+
   @Column()
   avatar: string;
 
   @Column({ nullable: true, default: '' })
   NIN?: string;
+
+  @Column({ default: false })
+  nin_verified: boolean;
 
   @Column({ type: 'timestamp', nullable: true })
   dateOfBirth?: Date | null;
